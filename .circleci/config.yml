@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    machine:
+      enabled: true
+    working_directory: ~/repo
+
+    steps:
+    - checkout
+
+    - run: mvn package
+
+    - run: ls -ltr
+
+#    - run: npm install -g cfn-create-or-update
+#
+#    - run: cfn-create-or-update --stack-name kotlin-course-client --template-body file://deployment.yml --region eu-west-1 --wait
+#
+#    - run: aws s3 sync ./build s3://xx
