@@ -16,7 +16,7 @@ jobs:
 
     - run: mkdir kloudformation
 
-    - run: cd kloudformation/kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
+    - run: cd kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
 
     - run: cd kloudformation/kloudformation && mvn install
 
