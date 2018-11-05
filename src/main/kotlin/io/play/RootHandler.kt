@@ -1,5 +1,7 @@
 package io.play
 
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.model.GetObjectRequest
 import io.play.kotlin.CompletionProvider
 import io.play.kotlin.EnvironmentManager
 import io.play.kotlin.ErrorHandler
@@ -15,6 +17,7 @@ import org.http4k.format.Jackson.auto
 import org.http4k.lens.*
 import org.http4k.server.asServer
 import org.http4k.serverless.AppLoader
+import java.io.File
 
 fun main(args: Array<String>){
     root.asServer(SunHttp(8080)).start()
@@ -31,6 +34,20 @@ val root = Filter{ next -> { it ->
 }.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(RootHandler)
 
 object LambdaHandler: AppLoader{
+    init {
+        println("Checking tmp directory")
+        val libs = File("/tmp").listFiles() ?: emptyArray()
+        println("Found$libs")
+        if(libs.isEmpty()){
+            val bucket = "kotlin-playground-server-libs"
+            val client =  AmazonS3Client.builder().withRegion("eu-west-1").build()
+            val items = client.listObjects(bucket).objectSummaries
+            items.forEach{
+                println("Downloading ${it.key}")
+                client.getObject(GetObjectRequest(bucket, it.key), File("/tmp/${it.key}"))
+            }
+        }
+    }
     override fun invoke(p1: Map<String, String>) = root
 }
 

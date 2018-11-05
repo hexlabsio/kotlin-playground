@@ -2,6 +2,7 @@ package io.play
 
 import io.play.kotlin.CompletionProvider
 import io.play.kotlin.EnvironmentManager
+import io.play.kotlin.EnvironmentManager.basePath
 import io.play.kotlin.JavaExecuter
 import io.play.kotlin.KotlinWrapper
 import io.play.model.Project
@@ -26,7 +27,7 @@ object RunHandler {
     }
 
     private fun argsFrom(compilationResult: KotlinWrapper.CompilationResult): Array<String>{
-        val outputDir = Paths.get("lib","generated", abs(Random().nextInt()).toString())
+        val outputDir = Paths.get(basePath,"generated", abs(Random().nextInt()).toString())
         compilationResult.files.forEach { name, bytes ->
             val path = outputDir.resolve(name)
             path.parent.toFile().mkdirs()
