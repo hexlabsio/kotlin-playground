@@ -36,8 +36,8 @@ val root = Filter{ next -> { it ->
 object LambdaHandler: AppLoader{
     init {
         println("Checking tmp directory")
-        val libs = File("/tmp").listFiles() ?: emptyArray()
-        println("Found$libs")
+        val libs = File("/tmp")?.listFiles()?.filter { it.name.endsWith(".jar") }?.toList() ?: emptyList()
+        println("Found the following libs: $libs")
         if(libs.isEmpty()){
             val bucket = "kotlin-playground-server-libs"
             val client =  AmazonS3Client.builder().withRegion("eu-west-1").build()
