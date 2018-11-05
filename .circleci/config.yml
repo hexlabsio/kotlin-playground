@@ -12,13 +12,13 @@ jobs:
 
     - run: cd generator && git clone https://github.com/hexlabsio/kloudformation-specification-generator.git
 
-    - run: cd generator && mvn install
+    - run: cd generator/kloudformation-specification-generator && mvn install
 
     - run: mkdir kloudformation
 
-    - run: cd kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
+    - run: cd kloudformation/kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
 
-    - run: cd kloudformation && mvn install
+    - run: cd kloudformation/kloudformation && mvn install
 
     - run: mvn package
 
