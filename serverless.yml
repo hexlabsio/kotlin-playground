@@ -10,10 +10,15 @@ provider:
     Action:
     - 's3:*'
     Resource:
-      Fn::Join:
-      - ''
-      - - 'arn:aws:s3:::'
-        - Ref: KotlinPlaygroundLibBucket
+      - Fn::Join:
+        - ''
+        - - 'arn:aws:s3:::'
+          - Ref: KotlinPlaygroundLibBucket
+      - Fn::Join:
+        - ''
+        - - 'arn:aws:s3:::'
+          - Ref: KotlinPlaygroundLibBucket
+          - '/*'
 
 package:
   artifact: target/playground.jar
