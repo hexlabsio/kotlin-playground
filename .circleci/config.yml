@@ -8,6 +8,12 @@ jobs:
     steps:
     - checkout
 
+    - run: mkdir generator
+
+    - run: cd generator && git clone https://github.com/hexlabsio/kloudformation-specification-generator.git
+
+    - run: ls -ltr
+
     - run: mvn package
 
     - run: ls -ltr
