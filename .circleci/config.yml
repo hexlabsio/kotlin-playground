@@ -22,7 +22,7 @@ jobs:
 
     - run: mvn package
 
-    - run: mkdir -p build/target && mv target/*.jar build/target/playground.jar
+    - run: mkdir -p build/target && mv target/playground-1.0-SNAPSHOT.jar build/target/playground.jar
 
     - run: mv serverless.yml build
 
@@ -30,8 +30,8 @@ jobs:
 
     - run: cd build && serverless deploy -v
 
-#    - run: npm install -g cfn-create-or-update
-#
-#    - run: cfn-create-or-update --stack-name kotlin-course-client --template-body file://deployment.yml --region eu-west-1 --wait
-#
-#    - run: aws s3 sync ./build s3://xx
+    - run: echo uploading libs
+
+    - run: ls -ltr lib
+
+    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs

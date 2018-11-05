@@ -5,6 +5,15 @@ provider:
   runtime: java8
   region: eu-west-1
   versionFunctions: false
+  iamRoleStatements:
+  - Effect: 'Allow'
+    Action:
+    - 's3:*'
+    Resource:
+      Fn::Join:
+      - ''
+      - - 'arn:aws:s3:::'
+        - Ref: KotlinPlaygroundLibBucket
 
 package:
   artifact: target/playground.jar
@@ -21,3 +30,10 @@ functions:
         path: /
         method: get
         cors: true
+
+resources:
+  Resources:
+    KotlinPlaygroundLibBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: kotlin-playground-server-libs
