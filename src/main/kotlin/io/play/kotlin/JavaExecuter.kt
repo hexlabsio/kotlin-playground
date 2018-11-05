@@ -44,6 +44,8 @@ object JavaExecuter{
                     e.printStackTrace()
                 }
             }
+            println(standardText.toString())
+            if(errorText.toString().isNotEmpty())error(errorText.toString())
             ProgramOutput(standardText.toString(), errorText.toString()).asExecutionResult()
         }
     }

@@ -15,6 +15,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.kloudformation</groupId>
+            <artifactId>kloudformation-specification</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
@@ -28,6 +33,8 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-plugin</artifactId>
             <version>${kotlin.version}</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/kotlin-plugin-1.3.0-release-208.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.http4k</groupId>
@@ -86,6 +93,12 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
+                            <excludeGroupIds>
+                                org.http4k
+                            </excludeGroupIds>
+                            <excludeArtifactIds>
+                                kotlin-plugin
+                            </excludeArtifactIds>
                             <outputDirectory>${project.basedir}/lib</outputDirectory>
                         </configuration>
                     </execution>

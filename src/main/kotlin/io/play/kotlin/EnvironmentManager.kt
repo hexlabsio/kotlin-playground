@@ -20,23 +20,22 @@ import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.js.config.JSConfigurationKeys
+import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
 object EnvironmentManager{
+    val basePath = if(System.getenv()["Environment"] != "local") "/tmp/lib" else (System.getProperty("user.dir") + "/lib")
+    val classPathUris = File(basePath).listFiles { file: File -> file.name.endsWith(".jar")}.map {
+        it
+    }
 
     val environment: KotlinCoreEnvironment = createEnvironment()
 
     fun createEnvironment(): KotlinCoreEnvironment{
         val arguments = K2JVMCompilerArguments()
         val configurations = CompilerConfiguration()
-        configurations.addJvmClasspathRoots(listOf(
-                Paths.get("/Users/chrisbarbour/Code/learn/playground/lib/kotlin-stdlib-1.3.0.jar").toFile(),
-                Paths.get("/Users/chrisbarbour/Code/learn/playground/lib/kotlin-compiler-1.3.0.jar").toFile(),
-                Paths.get("/Users/chrisbarbour/Code/learn/playground/lib/kotlin-stdlib-jdk7-1.3.0.jar").toFile(),
-                Paths.get("/Users/chrisbarbour/Code/learn/playground/lib/kotlin-stdlib-jdk8-1.3.0.jar").toFile(),
-                Paths.get("/Users/chrisbarbour/Code/learn/playground/lib/kotlin-reflect-1.3.0.jar").toFile()
-        ))
+        configurations.addJvmClasspathRoots(classPathUris)
         configurations.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
         configurations.put(JVMConfigurationKeys.DISABLE_PARAM_ASSERTIONS, arguments.noParamAssertions)
         configurations.put(JVMConfigurationKeys.DISABLE_CALL_ASSERTIONS, arguments.noCallAssertions)

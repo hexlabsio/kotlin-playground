@@ -5,6 +5,7 @@ import io.play.kotlin.EnvironmentManager
 import io.play.kotlin.JavaExecuter
 import io.play.kotlin.KotlinWrapper
 import io.play.model.Project
+import java.io.File
 import java.lang.Math.abs
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -25,26 +26,16 @@ object RunHandler {
     }
 
     private fun argsFrom(compilationResult: KotlinWrapper.CompilationResult): Array<String>{
-        val outputDir = Paths.get("out","tmp", abs(Random().nextInt()).toString())
+        val outputDir = Paths.get("lib","generated", abs(Random().nextInt()).toString())
         compilationResult.files.forEach { name, bytes ->
             val path = outputDir.resolve(name)
             path.parent.toFile().mkdirs()
             Files.write(path, bytes)
         }
-        val classPaths = listOf(outputDir)
         return arrayOf(
                 "java",
-                "-ea",
-                "-Djava.security.manager",
                 "-classpath"
-        ) +
-                classPaths.map { entry ->
-                    "/Users/chrisbarbour/Code/learn/playground/$entry:" +
-                            "/Users/chrisbarbour/Code/learn/playground/lib/kotlin-stdlib-1.3.0.jar:" +
-                            "/Users/chrisbarbour/Code/learn/playground/lib/kotlin-stdlib-jdk8-1.3.0.jar:" +
-                            "/Users/chrisbarbour/Code/learn/playground/lib/kotlin-stdlib-jdk7-1.3.0.jar:" +
-                            "/Users/chrisbarbour/Code/learn/playground/lib/kotlin-reflect-1.3.0.jar"
-                } +
+        ) + (EnvironmentManager.classPathUris + outputDir.toFile()).foldIndexed("") { index, acc, file -> acc + (if(index > 0) ":" else "") + file.absoluteFile} +
                 compilationResult.mainClass
     }
 }
