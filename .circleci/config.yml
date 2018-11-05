@@ -22,7 +22,9 @@ jobs:
 
     - run: mvn package
 
-    - run: mkdir build && mv target/*.jar build
+    - run: mkdir -p build/target && mv target/*.jar build/target/playground.jar
+
+    - run: mv serverless.yml build
 
     - run: npm install -g serverless
 

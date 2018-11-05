@@ -6,6 +6,9 @@ provider:
   region: eu-west-1
   versionFunctions: false
 
+package:
+  artifact: target/playground.jar
+
 functions:
   kotlinPlayground:
     handler: org.http4k.serverless.lambda.LambdaFunction::handle
