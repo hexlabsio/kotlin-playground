@@ -12,11 +12,17 @@ jobs:
 
     - run: cd generator && git clone https://github.com/hexlabsio/kloudformation-specification-generator.git
 
-    - run: ls -ltr
+    - run: cd generator && mvn install
+
+    - run: mkdir kloudformation
+
+    - run: cd kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
+
+    - run: cd kloudformation && mvn install
 
     - run: mvn package
 
-    - run: ls -ltr
+    - run: ls -ltr target
 
 #    - run: npm install -g cfn-create-or-update
 #
