@@ -18,11 +18,15 @@ jobs:
 
     - run: cd kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
 
-    - run: cd kloudformation/kloudformation && mvn install
+    - run: cd kloudformation/kloudformation mkdir -p src/main/resources && mvn install
 
     - run: mvn package
 
-    - run: ls -ltr target
+    - run: mkdir build && mv target/*.jar build
+
+    - run: npm install -g serverless
+
+    - run: cd build && serverless deploy -v
 
 #    - run: npm install -g cfn-create-or-update
 #

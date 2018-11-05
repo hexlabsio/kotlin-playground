@@ -1,0 +1,20 @@
+service: kotlin-playground-server
+
+provider:
+  name: aws
+  runtime: java8
+  region: eu-west-1
+  versionFunctions: false
+
+functions:
+  kotlinPlayground:
+    handler: org.http4k.serverless.lambda.LambdaFunction::handle
+    memorySize: 1024
+    timeout: 10
+    environment:
+      HTTP4K_BOOTSTRAP_CLASS: io.play.LambdaHandler
+    events:
+    - http:
+        path: /
+        method: get
+        cors: true

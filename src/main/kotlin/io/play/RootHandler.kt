@@ -14,17 +14,24 @@ import org.http4k.server.SunHttp
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.*
 import org.http4k.server.asServer
+import org.http4k.serverless.AppLoader
 
 fun main(args: Array<String>){
-    Filter{ next -> { it ->
-        try{
-            next(it.removeHeader("Accept"))
-        } catch (e: Exception){
-            e.printStackTrace()
-            Response(Status.INTERNAL_SERVER_ERROR)
-        }
+    root.asServer(SunHttp(8080)).start()
+}
+
+val root = Filter{ next -> { it ->
+    try{
+        next(it.removeHeader("Accept"))
+    } catch (e: Exception){
+        e.printStackTrace()
+        Response(Status.INTERNAL_SERVER_ERROR)
     }
-    }.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(RootHandler).asServer(SunHttp(8080)).start()
+}
+}.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(RootHandler)
+
+object LambdaHandler: AppLoader{
+    override fun invoke(p1: Map<String, String>) = root
 }
 
 object RootHandler: HttpHandler{
