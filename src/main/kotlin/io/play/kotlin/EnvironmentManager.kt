@@ -23,6 +23,7 @@ object EnvironmentManager{
         val arguments = K2JVMCompilerArguments()
         val configurations = CompilerConfiguration()
         configurations.addJvmClasspathRoots(classPathUris)
+        println("Files in dir: $classPathUris")
         configurations.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
         configurations.put(JVMConfigurationKeys.DISABLE_PARAM_ASSERTIONS, arguments.noParamAssertions)
         configurations.put(JVMConfigurationKeys.DISABLE_CALL_ASSERTIONS, arguments.noCallAssertions)
