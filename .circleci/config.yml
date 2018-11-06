@@ -11,15 +11,15 @@ jobs:
 
     - checkout
 
-    - restore_cache:
-        key: circleci-kotlin-playground-{{ checksum "pom.xml" }}
-
-    - run: mvn dependency:go-offline
-
-    - save_cache:
-        paths:
-        - ~/.m2
-        key: circleci-kotlin-playground-{{ checksum "pom.xml" }}
+#    - restore_cache:
+#        key: circleci-kotlin-playground-{{ checksum "pom.xml" }}
+#
+#    - run: mvn dependency:go-offline
+#
+#    - save_cache:
+#        paths:
+#        - ~/.m2
+#        key: circleci-kotlin-playground-{{ checksum "pom.xml" }}
 
     - run: mkdir generator
 
