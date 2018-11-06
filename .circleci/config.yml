@@ -31,7 +31,7 @@ jobs:
 
     - run: cd kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
 
-    - run: cd kloudformation/kloudformation mkdir -p src/main/resources && mvn install -DskipTests=true
+    - run: cd kloudformation/kloudformation && mkdir -p src/main/resources && mvn install -DskipTests=true
 
     - run: mvn package -DskipTests=true
 
