@@ -1,12 +1,25 @@
 version: 2
 jobs:
   build:
-    machine:
-      enabled: true
-    working_directory: ~/repo
+
+    working_directory: ~/circleci-kotlin-playground
+
+    docker:
+    - image: circleci/openjdk:8-jdk-browsers
 
     steps:
+
     - checkout
+
+    - restore_cache:
+        key: circleci-kotlin-playground-{{ checksum "pom.xml" }}
+
+    - run: mvn dependency:go-offline
+
+    - save_cache:
+        paths:
+        - ~/.m2
+        key: circleci-kotlin-playground-{{ checksum "pom.xml" }}
 
     - run: mkdir generator
 
@@ -24,7 +37,14 @@ jobs:
 
     - run: mkdir -p build/target && mv target/playground-1.0-SNAPSHOT.jar build/target/playground.jar
 
+    - store_artifacts:
+        path: target/playground.jar
+
     - run: mv serverless.yml build
+
+    - run: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash
+
+    - run: sudo apt-get install -y nodejs
 
     - run: npm install -g serverless
 

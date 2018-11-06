@@ -135,7 +135,9 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>io.play.RootHandlerKt</mainClass>
+                                </transformer>
                             </transformers>
                         </configuration>
                     </execution>
