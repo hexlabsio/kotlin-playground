@@ -25,15 +25,15 @@ jobs:
 
     - run: cd generator && git clone https://github.com/hexlabsio/kloudformation-specification-generator.git
 
-    - run: cd generator/kloudformation-specification-generator && mvn install
+    - run: cd generator/kloudformation-specification-generator && mvn install -DskipTests=true
 
     - run: mkdir kloudformation
 
     - run: cd kloudformation && git clone https://github.com/hexlabsio/kloudformation.git
 
-    - run: cd kloudformation/kloudformation mkdir -p src/main/resources && mvn install
+    - run: cd kloudformation/kloudformation mkdir -p src/main/resources && mvn install -DskipTests=true
 
-    - run: mvn package
+    - run: mvn package -DskipTests=true
 
     - run: mkdir -p build/target && mv target/playground-1.0-SNAPSHOT.jar build/target/playground.jar
 
