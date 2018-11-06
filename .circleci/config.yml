@@ -46,7 +46,7 @@ jobs:
 
     - run: sudo apt-get install -y nodejs
 
-    - run: npm install -g serverless
+    - run: sudo npm install -g serverless
 
     - run: cd build && serverless deploy -v
 
