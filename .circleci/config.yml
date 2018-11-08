@@ -41,9 +41,9 @@ jobs:
     - run: sudo npm install -g serverless
 
     - run: cd build && serverless deploy -v
-
-    - run: echo uploading libs
-
-    - run: ls -ltr lib
-
-    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs
+#
+#    - run: echo uploading libs
+#
+#    - run: ls -ltr lib
+#
+#    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs

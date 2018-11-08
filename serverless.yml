@@ -8,6 +8,10 @@ provider:
   iamRoleStatements:
   - Effect: 'Allow'
     Action:
+    - 'xray:*'
+    Resource: '*'
+  - Effect: 'Allow'
+    Action:
     - 's3:*'
     Resource:
       - Fn::Join:
@@ -34,6 +38,10 @@ functions:
     - http:
         path: /
         method: post
+        cors: true
+    - http:
+        path: /
+        method: get
         cors: true
 
 resources:

@@ -14,7 +14,7 @@ import java.io.File
 object EnvironmentManager{
     val basePath = if(System.getenv()["Environment"] != "local") "/tmp" else (System.getProperty("user.dir") + "/lib")
     val classPathUris = File(basePath).listFiles { file: File -> file.name.endsWith(".jar")}.map {
-        it
+        it;
     }
 
     val environment: KotlinCoreEnvironment = createEnvironment()
