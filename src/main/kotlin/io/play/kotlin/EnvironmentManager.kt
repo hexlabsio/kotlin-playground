@@ -20,6 +20,7 @@ object EnvironmentManager{
     val environment: KotlinCoreEnvironment = createEnvironment()
 
     fun createEnvironment(): KotlinCoreEnvironment{
+        println("basePath is $basePath")
         val arguments = K2JVMCompilerArguments()
         val configurations = CompilerConfiguration()
         configurations.addJvmClasspathRoots(classPathUris)
