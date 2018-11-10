@@ -1,7 +1,5 @@
 package io.play
 
-import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.GetObjectRequest
 import io.play.kotlin.CompletionProvider
 import io.play.kotlin.EnvironmentManager
 import io.play.kotlin.ErrorHandler
@@ -18,6 +16,9 @@ import org.http4k.lens.*
 import org.http4k.server.asServer
 import org.http4k.serverless.AppLoader
 import java.io.File
+import java.io.FileOutputStream
+import java.net.URLDecoder
+import java.util.jar.JarFile
 
 fun main(args: Array<String>){
     root.asServer(SunHttp(8080)).start()
@@ -39,16 +40,37 @@ object LambdaHandler: AppLoader{
         val libs = File("/tmp")?.listFiles()?.filter { it.name.endsWith(".jar") }?.toList() ?: emptyList()
         println("Found the following libs: $libs")
         if(libs.isEmpty()){
-            val bucket = "kotlin-playground-server-libs"
-            val client =  AmazonS3Client.builder().withRegion("eu-west-1").build()
-            val items = client.listObjects(bucket).objectSummaries
-            items.forEach{
-                println("Downloading ${it.key}")
-                client.getObject(GetObjectRequest(bucket, it.key), File("/tmp/${it.key}"))
-            }
+            val start = System.currentTimeMillis()
+            val filesToCopy = filesInDir("lib")
+            println("Copying files: $filesToCopy")
+            filesToCopy?.let { copyFiles(it, "/var/tmp/jars") }
+            println("copy took : ${System.currentTimeMillis() - start}")
         }
     }
     override fun invoke(p1: Map<String, String>) = root
+
+    fun filesInDir(dirPath: String): List<String>? =
+            ClassLoader.getSystemClassLoader().getResource(dirPath)?.let {
+                when (it.protocol) {
+                    "file" -> File(it.toURI()).list()?.toList()?.map { "$dirPath/$it" }
+                    "jar" -> {
+                        val jarPath = it.path.substring(5, it.path.indexOf("!"))
+                        val jarFile = JarFile(URLDecoder.decode(jarPath, "UTF-8"))
+                        jarFile.entries().toList()
+                                .filter { it.name.startsWith(dirPath) && it.name.endsWith(".jar") }
+                                .map { it.toString() }
+                    }
+                    else -> null
+                }
+            }
+
+    val classLoader = ClassLoader.getSystemClassLoader()
+    fun copyFiles(files: List<String>, outAbsDirPath: String): List<Long> =
+            files.map {
+                classLoader.getResourceAsStream(it).copyTo(
+                        FileOutputStream(outAbsDirPath + "/" + it.split("/").last())
+                )
+            }
 }
 
 object RootHandler: HttpHandler{
