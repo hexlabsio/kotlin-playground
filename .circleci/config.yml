@@ -34,4 +34,4 @@ jobs:
 #
 #    - run: ls -ltr lib
 #
-#    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs
+    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs
