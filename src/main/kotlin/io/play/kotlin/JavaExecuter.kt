@@ -66,7 +66,7 @@ object JavaExecuter{
             while (true) {
                 val line = from.readLine()
                 if (Thread.interrupted() || line == null) break
-                string.append(line)
+                string.appendln(line)
             }
         } catch (e: Throwable) {
             if (!Thread.interrupted()) {
