@@ -30,6 +30,6 @@ jobs:
 
     - run: cd build && serverless deploy -v
 
-    - run: sudo apt-get install awscli
-#
-    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs
+#    - run: sudo apt-get install awscli
+
+#    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs

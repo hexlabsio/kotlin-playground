@@ -31,7 +31,7 @@ functions:
   kotlinPlayground:
     handler: org.http4k.serverless.lambda.LambdaFunction::handle
     memorySize: 1024
-    timeout: 300
+    timeout: 30
     environment:
       HTTP4K_BOOTSTRAP_CLASS: io.play.LambdaHandler
     events:
