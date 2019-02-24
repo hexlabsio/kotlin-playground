@@ -13,18 +13,17 @@ import java.io.File
 
 object EnvironmentManager{
     val basePath = System.getProperty("user.dir") + "/lib"
-    val classPathUris = File(basePath).listFiles { file: File -> file.name.endsWith(".jar")}.map {
-        it;
+    val classPathUris = File(basePath).listFiles { file: File -> file.name.endsWith(".jar")}.toList().let {
+        if(it.isEmpty()) throw IllegalArgumentException("No Libraries found in $basePath")
+        it
     }
 
     val environment: KotlinCoreEnvironment = createEnvironment()
 
     fun createEnvironment(): KotlinCoreEnvironment{
-        println("basePath is $basePath")
         val arguments = K2JVMCompilerArguments()
         val configurations = CompilerConfiguration()
         configurations.addJvmClasspathRoots(classPathUris)
-        println("Files in dir: $classPathUris")
         configurations.put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
         configurations.put(JVMConfigurationKeys.DISABLE_PARAM_ASSERTIONS, arguments.noParamAssertions)
         configurations.put(JVMConfigurationKeys.DISABLE_CALL_ASSERTIONS, arguments.noCallAssertions)

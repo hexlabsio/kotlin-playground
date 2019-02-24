@@ -21,8 +21,13 @@ import java.io.File
 
 fun main(args: Array<String>){
     root.asServer(SunHttp(8080)).start()
+    println("Server Started on Port 8080")
 }
-
+val tracing = ServerFilters.RequestTracing({ request, zipkin ->
+    println("START [${zipkin.traceId.value} ${request.method.name}] - ${request.uri} ")
+}, { request, response, zipkin ->
+    println("END [${zipkin.traceId.value} ${request.method.name}] - ${request.uri} RESPONSE - ${response.status}")
+})
 val root = Filter{ next -> { it ->
     try{
         next(it.removeHeader("Accept"))
@@ -31,7 +36,7 @@ val root = Filter{ next -> { it ->
         Response(Status.INTERNAL_SERVER_ERROR)
     }
 }
-}.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(RootHandler)
+}.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(tracing).then(RootHandler)
 
 object LambdaHandler: AppLoader{
     override fun invoke(p1: Map<String, String>) = root
@@ -64,18 +69,6 @@ object RootHandler: HttpHandler{
         }
     }
     private fun setupEnvironment(){
-        println("Checking tmp directory")
-        val libs = (if(File("lib").exists()) File("lib") else File("/tmp")).listFiles()?.filter { it.name.endsWith(".jar") }?.toList() ?: emptyList()
-        println("Found the following libs: $libs")
-        if (libs.isEmpty()) {
-            val bucket = "kotlin-playground-server-libs"
-            val client = AmazonS3Client.builder().withRegion("eu-west-1").build()
-            val items = client.listObjects(bucket).objectSummaries
-            items.forEach {
-                println("Downloading ${it.key}")
-                client.getObject(GetObjectRequest(bucket, it.key), File("/tmp/${it.key}"))
-            }
-        }
         EnvironmentManager.createEnvironment()
     }
     private fun lineFrom(request: Request): Int{
