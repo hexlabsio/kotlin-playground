@@ -19,7 +19,7 @@ jobs:
 
     - run:
         name: Install CFN Scripts
-        command: npm install -g cfn-create-or-update
+        command: sudo npm install -g cfn-create-or-update
 
     - run:
         name: Install Local File
@@ -52,4 +52,4 @@ jobs:
 
     - run:
         name: Deploy Stack
-        command: cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait
+        command: sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait
