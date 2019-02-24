@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import java.io.File
 
 object EnvironmentManager{
-    val basePath = if(System.getenv()["Environment"] != "local") "/tmp" else (System.getProperty("user.dir") + "/lib")
+    val basePath = System.getProperty("user.dir") + "/lib"
     val classPathUris = File(basePath).listFiles { file: File -> file.name.endsWith(".jar")}.map {
         it;
     }

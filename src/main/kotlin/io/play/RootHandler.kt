@@ -44,7 +44,9 @@ object RootHandler: HttpHandler{
     override fun invoke(request: Request): Response {
         val type = request.query("type")
         return when(type){
-            "getKotlinVersions" -> Response(OK).body("[{\"version\":\"1.3.0\",\"build\":\"1.3.0\",\"obsolete\":false,\"latestStable\":true,\"hasScriptJar\":false,\"stdlibVersion\":\"1.3.0\"}]")
+            "getKotlinVersions" -> {
+                Response(OK).body("[{\"version\":\"1.3.0\",\"build\":\"1.3.0\",\"obsolete\":false,\"latestStable\":true,\"hasScriptJar\":false,\"stdlibVersion\":\"1.3.0\"}]")
+            }
             "highlight" -> {
                 setupEnvironment()
                 Response(OK).with(highlightResult of RunHandler.highlight(projectFrom(request)))
@@ -63,7 +65,7 @@ object RootHandler: HttpHandler{
     }
     private fun setupEnvironment(){
         println("Checking tmp directory")
-        val libs = File("/tmp")?.listFiles()?.filter { it.name.endsWith(".jar") }?.toList() ?: emptyList()
+        val libs = (if(File("lib").exists()) File("lib") else File("/tmp")).listFiles()?.filter { it.name.endsWith(".jar") }?.toList() ?: emptyList()
         println("Found the following libs: $libs")
         if (libs.isEmpty()) {
             val bucket = "kotlin-playground-server-libs"

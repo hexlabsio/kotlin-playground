@@ -20,7 +20,7 @@ object KotlinWrapper {
         if(isSafe(errors)) {
             val generationState = Resolver.generationState(files, EnvironmentManager.environment.project)
             val mainClass = findMainClass(generationState.bindingContext, files, "File")
-            KotlinCodegenFacade.compileCorrectFiles(generationState, { error, file -> error.printStackTrace() })
+            KotlinCodegenFacade.compileCorrectFiles(generationState) { error, _ -> error.printStackTrace() }
             val factory = generationState.factory
             val result =  CompilationResult(factory.asList().map { it.relativePath to it.asByteArray() }.toMap(), mainClass)
             return result to errors

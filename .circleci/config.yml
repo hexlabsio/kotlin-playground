@@ -11,25 +11,18 @@ jobs:
 
     - checkout
 
-    - run:  mvn install:install-file -Dfile=kotlin-plugin-1.3.0-release-208.jar -DgroupId=org.jetbrains.kotlin -DartifactId=kotlin-plugin -Dversion=1.3.0 -Dpackaging=jar
+    - run:
+        name: Install Local File
+        command: mvn install:install-file -Dfile=kotlin-plugin-1.3.0-release-208.jar -DgroupId=org.jetbrains.kotlin -DartifactId=kotlin-plugin -Dversion=1.3.0 -Dpackaging=jar
 
-    - run: mvn package -DskipTests=true
+    - run:
+        name: Package
+        command: mvn package -DskipTests=true
 
-    - run: mkdir -p build/target && mv target/playground-1.0-SNAPSHOT.jar build/target/playground.jar
+    - run:
+        name: Docker Build
+        command: docker build -t hexlabs/kotlin-playground:latest .
 
-    - store_artifacts:
-        path: target/playground.jar
-
-    - run: mv serverless.yml build
-
-    - run: curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash
-
-    - run: sudo apt-get install -y nodejs
-
-    - run: sudo npm install -g serverless
-
-    - run: cd build && serverless deploy -v
-
-#    - run: sudo apt-get install awscli
-
-#    - run: aws s3 sync ./lib s3://kotlin-playground-server-libs
+    - run:
+        name: Docker Tag
+        command: docker tag hexlabs/kotlin-playground:latest hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM

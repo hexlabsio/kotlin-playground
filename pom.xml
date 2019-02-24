@@ -11,8 +11,7 @@
     <properties>
         <kotlin.version>1.3.0</kotlin.version>
         <http4k.version>3.98.0</http4k.version>
-        <kloudformation.generator.version>0.1.9</kloudformation.generator.version>
-        <kloudformation.version>0.1.37</kloudformation.version>
+        <kloudformation.version>0.1.100</kloudformation.version>
     </properties>
     <repositories>
         <repository>
@@ -25,11 +24,6 @@
             <groupId>io.kloudformation</groupId>
             <artifactId>kloudformation</artifactId>
             <version>${kloudformation.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.kloudformation</groupId>
-            <artifactId>kloudformation-specification-generator</artifactId>
-            <version>${kloudformation.generator.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -77,6 +71,7 @@
             <artifactId>http4k-multipart</artifactId>
             <version>${http4k.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -120,10 +115,10 @@
                         </goals>
                         <configuration>
                             <excludeGroupIds>
-                                org.http4k,com.amazonaws,commons-ogging,org.apache.httpcomponents,
+                                org.http4k,com.amazonaws,commons-ogging,org.apache.httpcomponents,com.squareup,org.jsoup
                             </excludeGroupIds>
                             <excludeArtifactIds>
-                                kotlin-plugin,ion-java,joda-time,servlet-api
+                                kotlin-plugin,ion-java,joda-time,javax.servlet-api,annotations,commons-codec,commons-logging,jackson-dataformat-cbor,kotlin-compiler,kotlin-reflect,kotlin-script-runtime,kotlin-stdlib-jdk7
                             </excludeArtifactIds>
                             <outputDirectory>${project.basedir}/lib</outputDirectory>
                         </configuration>
