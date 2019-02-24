@@ -12,12 +12,21 @@ jobs:
     - checkout
 
     - run:
+        name: Download and Install Node
+        command: |
+          curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash
+          sudo apt-get install -y nodejs
+
+    - run:
         name: Install Local File
         command: mvn install:install-file -Dfile=kotlin-plugin-1.3.0-release-208.jar -DgroupId=org.jetbrains.kotlin -DartifactId=kotlin-plugin -Dversion=1.3.0 -Dpackaging=jar
 
     - run:
         name: Package
         command: mvn package -DskipTests=true
+
+    - store_artifacts:
+        path: template.yml
 
     - run:
         name: Docker Build
