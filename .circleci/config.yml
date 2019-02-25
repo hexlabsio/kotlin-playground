@@ -55,8 +55,5 @@ jobs:
     - run:
         name: Deploy  Stack
         command: |
-          echo $AWS_ACCESS_KEY_ID
-          AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-          echo $AWS_ACCESS_KEY_ID
-          AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-          sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait
+          aws s3 ls
+          #sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait
