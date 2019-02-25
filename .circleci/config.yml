@@ -11,6 +11,8 @@ jobs:
     - setup_remote_docker
     - checkout
 
+    - run: ls -latr ~
+
     - run:
         name: Download and Install Node
         command: |
