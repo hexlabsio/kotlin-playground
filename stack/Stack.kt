@@ -149,7 +149,7 @@ class Stack: StackBuilder {
                             memory = Value.Of(2048),
                             image = +"hexlabs/kotlin-playground",
                             portMappings = listOf(
-                                    PortMapping(containerPort = Value.Of(8080))
+                                    PortMapping(containerPort = Value.Of(8080), hostPort = Value.Of(8080))
                             ),
                             logConfiguration = LogConfiguration(
                                     logDriver = +"awslogs",
@@ -172,16 +172,8 @@ class Stack: StackBuilder {
             name(serviceName.ref())
             unhealthyThresholdCount(2)
         }
-        val dummyTargetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
-            healthCheckIntervalSeconds(6)
-            healthCheckPath("/")
-            healthCheckProtocol("HTTP")
-            healthCheckTimeoutSeconds(5)
-            healthyThresholdCount(2)
-            unhealthyThresholdCount(2)
-        }
         val listener = listener(dependsOn = listOf(loadBalancer.logicalName), defaultActions = listOf(Action(
-                targetGroupArn = dummyTargetGroup.ref(),
+                targetGroupArn = targetGroup.ref(),
                 type = +"forward"
         )),loadBalancerArn = loadBalancer.ref(), port = Value.Of(80), protocol = +"HTTP")
         val loadBalancerRule = listenerRule(
