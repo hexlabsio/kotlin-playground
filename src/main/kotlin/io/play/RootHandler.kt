@@ -15,6 +15,8 @@ import org.http4k.format.Jackson
 import org.http4k.server.SunHttp
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.*
+import org.http4k.routing.bind
+import org.http4k.routing.routes
 import org.http4k.server.asServer
 import org.http4k.serverless.AppLoader
 import java.io.File
@@ -36,7 +38,10 @@ val root = Filter{ next -> { it ->
         Response(Status.INTERNAL_SERVER_ERROR)
     }
 }
-}.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(tracing).then(RootHandler)
+}.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(tracing).then(routes(
+        "/" bind Method.GET to RootHandler,
+        "/health" bind Method.GET to { Response(Status.OK) }
+))
 
 object LambdaHandler: AppLoader{
     override fun invoke(p1: Map<String, String>) = root

@@ -54,6 +54,4 @@ jobs:
 
     - run:
         name: Deploy  Stack
-        command: |
-          aws s3 ls
-          #sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait
+        command: sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait --capability CAPABILITY_IAM

@@ -30,7 +30,7 @@ class Stack: StackBuilder {
         val serviceName = parameter<String>("ServiceName", default = "kotlin-playground")
         val vpcId = parameter<String>("VpcId", default = "vpc-35efcd53")
         val subnetA = parameter<String>("SubnetA", default = "subnet-c38de28b")
-        val subnetB = parameter<String>("SubnetA", default = "subnet-cfc11895")
+        val subnetB = parameter<String>("SubnetB", default = "subnet-cfc11895")
 
         val cluster = cluster()
         val containerSecurityGroup = securityGroup(+"Access to the Fargate containers"){
