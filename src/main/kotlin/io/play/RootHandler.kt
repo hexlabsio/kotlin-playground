@@ -70,7 +70,7 @@ object RootHandler: HttpHandler{
                 setupEnvironment()
                 Response(OK).with(result of RunHandler.run(projectFrom(request)))
             }
-            else -> Response(Status.NOT_FOUND)
+            else -> Response(Status.OK)
         }
     }
     private fun setupEnvironment(){

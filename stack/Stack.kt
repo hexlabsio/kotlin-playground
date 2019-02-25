@@ -164,7 +164,7 @@ class Stack: StackBuilder {
         }
         val targetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
             healthCheckIntervalSeconds(6)
-            healthCheckPath("/health")
+            healthCheckPath("/")
             healthCheckProtocol("HTTP")
             healthCheckTimeoutSeconds(5)
             healthyThresholdCount(2)
@@ -174,7 +174,7 @@ class Stack: StackBuilder {
         }
         val dummyTargetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
             healthCheckIntervalSeconds(6)
-            healthCheckPath("/health")
+            healthCheckPath("/")
             healthCheckProtocol("HTTP")
             healthCheckTimeoutSeconds(5)
             healthyThresholdCount(2)
