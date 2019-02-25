@@ -162,7 +162,7 @@ class Stack: StackBuilder {
                     )
             ))
         }
-        val targetGroup = targetGroup(port = Value.Of(8080),protocol = +"HTTP",vpcId = vpcId.ref()){
+        val targetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
             healthCheckIntervalSeconds(6)
             healthCheckPath("/health")
             healthCheckProtocol("HTTP")
@@ -172,8 +172,16 @@ class Stack: StackBuilder {
             name(serviceName.ref())
             unhealthyThresholdCount(2)
         }
+        val dummyTargetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
+            healthCheckIntervalSeconds(6)
+            healthCheckPath("/health")
+            healthCheckProtocol("HTTP")
+            healthCheckTimeoutSeconds(5)
+            healthyThresholdCount(2)
+            unhealthyThresholdCount(2)
+        }
         val listener = listener(dependsOn = listOf(loadBalancer.logicalName), defaultActions = listOf(Action(
-                targetGroupArn = targetGroup.ref(),
+                targetGroupArn = dummyTargetGroup.ref(),
                 type = +"forward"
         )),loadBalancerArn = loadBalancer.ref(), port = Value.Of(80), protocol = +"HTTP")
         val loadBalancerRule = listenerRule(
