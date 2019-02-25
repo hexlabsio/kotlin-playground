@@ -22,8 +22,8 @@ import org.http4k.serverless.AppLoader
 import java.io.File
 
 fun main(args: Array<String>){
-    root.asServer(SunHttp(8080)).start()
-    println("Server Started on Port 8080")
+    root.asServer(SunHttp(80)).start()
+    println("Server Started on Port 80")
 }
 val tracing = ServerFilters.RequestTracing({ request, zipkin ->
     println("START [${zipkin.traceId.value} ${request.method.name}] - ${request.uri} ")

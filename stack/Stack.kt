@@ -149,7 +149,7 @@ class Stack: StackBuilder {
                             memory = Value.Of(2048),
                             image = +"hexlabs/kotlin-playground",
                             portMappings = listOf(
-                                    PortMapping(containerPort = Value.Of(8080), hostPort = Value.Of(8080))
+                                    PortMapping(containerPort = Value.Of(80), hostPort = Value.Of(80))
                             ),
                             logConfiguration = LogConfiguration(
                                     logDriver = +"awslogs",
@@ -212,7 +212,7 @@ class Stack: StackBuilder {
                 }
             }
             loadBalancers(listOf(
-                    loadBalancer(Value.Of(8080)){
+                    loadBalancer(Value.Of(80)){
                         containerName(serviceName.ref())
                         targetGroupArn(targetGroup.ref())
                     }
