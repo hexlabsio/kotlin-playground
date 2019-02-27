@@ -137,7 +137,7 @@ class Stack: StackBuilder {
         logGroup.ref()
         val task = taskDefinition {
             family(serviceName.ref())
-            cpu("256")
+            cpu("1024")
             memory("2048")
             networkMode("awsvpc")
             requiresCompatibilities(listOf(+"FARGATE"))
@@ -145,11 +145,11 @@ class Stack: StackBuilder {
             containerDefinitions(listOf(
                     ContainerDefinition(
                             name = serviceName.ref(),
-                            cpu = Value.Of(256),
+                            cpu = Value.Of(1024),
                             memory = Value.Of(2048),
                             image = +"hexlabs/kotlin-playground",
                             portMappings = listOf(
-                                    PortMapping(containerPort = Value.Of(80), hostPort = Value.Of(80))
+                                    PortMapping(containerPort = Value.Of(80))
                             ),
                             logConfiguration = LogConfiguration(
                                     logDriver = +"awslogs",
@@ -172,16 +172,8 @@ class Stack: StackBuilder {
             name(serviceName.ref())
             unhealthyThresholdCount(2)
         }
-        val dummyTargetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
-            healthCheckIntervalSeconds(6)
-            healthCheckPath("/")
-            healthCheckProtocol("HTTP")
-            healthCheckTimeoutSeconds(5)
-            healthyThresholdCount(2)
-            unhealthyThresholdCount(2)
-        }
         val listener = listener(dependsOn = listOf(loadBalancer.logicalName), defaultActions = listOf(Action(
-                targetGroupArn = dummyTargetGroup.ref(),
+                targetGroupArn = targetGroup.ref(),
                 type = +"forward"
         )),loadBalancerArn = loadBalancer.ref(), port = Value.Of(80), protocol = +"HTTP")
         val loadBalancerRule = listenerRule(
@@ -191,7 +183,7 @@ class Stack: StackBuilder {
                 )),
                 conditions = listOf(RuleCondition(
                         field = +"path-pattern",
-                        values = +listOf(+"*")
+                        values = +listOf(+"/")
                 )),
                 priority = Value.Of(1),
                 listenerArn = listener.ref()
@@ -202,7 +194,7 @@ class Stack: StackBuilder {
             launchType("FARGATE")
             deploymentConfiguration {
                 maximumPercent(200)
-                minimumHealthyPercent(75)
+                minimumHealthyPercent(100)
             }
             desiredCount(2)
             networkConfiguration {

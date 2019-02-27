@@ -39,7 +39,8 @@ val root = Filter{ next -> { it ->
     }
 }
 }.then(ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)).then(tracing).then(routes(
-        "/" bind Method.GET to RootHandler,
+        "/kotlinServer" bind Method.GET to RootHandler,
+        "/kotlinServer" bind Method.POST to RootHandler,
         "/health" bind Method.GET to { Response(Status.OK) }
 ))
 
