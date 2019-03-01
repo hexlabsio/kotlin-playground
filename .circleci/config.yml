@@ -8,7 +8,7 @@ jobs:
     - checkout
     - run:
         name: Install CFN Scripts
-        command: sudo npm install -g cfn-create-or-update
+        command: npm install -g cfn-create-or-update
 
     - run:
         name: Install Local File
