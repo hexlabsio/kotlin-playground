@@ -1,24 +1,15 @@
 version: 2
 jobs:
   build:
-
+    machine:
+      enabled: true
     working_directory: ~/circleci-kotlin-playground
 
     docker:
     - image: circleci/openjdk:8-jdk-browsers
 
     steps:
-    - setup_remote_docker
     - checkout
-
-    - run: ls -latr ~
-
-    - run:
-        name: Download and Install Node
-        command: |
-          curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash
-          sudo apt-get install -y nodejs
-
     - run:
         name: Install CFN Scripts
         command: sudo npm install -g cfn-create-or-update
@@ -52,6 +43,6 @@ jobs:
           docker push hexlabs/kotlin-playground:latest
           docker push hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
 
-#    - run:
-#        name: Deploy  Stack
-#        command: sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 60 --region eu-west-1 --wait --capability CAPABILITY_IAM
+    - run:
+        name: Deploy  Stack
+        command: sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 120 --region eu-west-1 --wait --capability CAPABILITY_IAM
