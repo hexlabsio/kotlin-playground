@@ -41,4 +41,4 @@ jobs:
 
     - run:
         name: Deploy  Stack
-        command: sudo cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 120 --region eu-west-1 --wait --capability CAPABILITY_IAM
+        command: cfn-create-or-update --stack-name hexlabs-kotlin-playground --template-body file://template.yml --timeout-in-minutes 120 --region eu-west-1 --wait --capability CAPABILITY_IAM
