@@ -3,15 +3,18 @@ import io.kloudformation.StackBuilder
 import io.kloudformation.Value
 import io.kloudformation.model.KloudFormationTemplate.Builder.Companion.awsRegion
 import io.kloudformation.model.iam.*
+import io.kloudformation.property.aws.certificatemanager.certificate.DomainValidationOption
 import io.kloudformation.property.aws.ec2.securitygroup.Ingress
 import io.kloudformation.property.aws.ecs.service.loadBalancer
 import io.kloudformation.property.aws.ecs.taskdefinition.ContainerDefinition
 import io.kloudformation.property.aws.ecs.taskdefinition.LogConfiguration
 import io.kloudformation.property.aws.ecs.taskdefinition.PortMapping
 import io.kloudformation.property.aws.elasticloadbalancingv2.listener.Action
+import io.kloudformation.property.aws.elasticloadbalancingv2.listenercertificate.Certificate
 import io.kloudformation.property.aws.elasticloadbalancingv2.listenerrule.RuleCondition
 import io.kloudformation.property.aws.elasticloadbalancingv2.loadbalancer.LoadBalancerAttribute
 import io.kloudformation.property.aws.iam.role.Policy
+import io.kloudformation.resource.aws.certificatemanager.certificate
 import io.kloudformation.resource.aws.ec2.securityGroup
 import io.kloudformation.resource.aws.ecs.cluster
 import io.kloudformation.resource.aws.ecs.service
@@ -27,7 +30,7 @@ typealias RuleAction = io.kloudformation.property.aws.elasticloadbalancingv2.lis
 
 class Stack: StackBuilder {
     override fun KloudFormation.create() {
-        val serviceName = parameter<String>("ServiceName", default = "kotlin-playground")
+        val serviceName = parameter<String>("ServiceName", default = "kotlin-playground-service")
         val vpcId = parameter<String>("VpcId", default = "vpc-35efcd53")
         val subnetA = parameter<String>("SubnetA", default = "subnet-c38de28b")
         val subnetB = parameter<String>("SubnetB", default = "subnet-cfc11895")
@@ -35,59 +38,10 @@ class Stack: StackBuilder {
         val cluster = cluster()
         val containerSecurityGroup = securityGroup(+"Access to the Fargate containers"){
             vpcId(vpcId.ref())
+            securityGroupIngress(listOf(
+                    Ingress(cidrIp = +"0.0.0.0/0", ipProtocol = +"-1")
+            ))
         }
-//        val autoscalingRole = role(
-//                assumeRolePolicyDocument = policyDocument { statement(action = action("sts:AssumeRole")) { principal(PrincipalType.SERVICE,listOf(+"application-autoscaling.amazonaws.com")) } }
-//        ){
-//            path("/")
-//            policies(listOf(
-//                    Policy(
-//                            policyName = +"service-autoscaling",
-//                            policyDocument = policyDocument {
-//                                statement(
-//                                        resource = allResources,
-//                                        action = actions(
-//                                                "application-autoscaling:*",
-//                                                "cloudwatch:DescribeAlarms",
-//                                                "cloudwatch:PutMetricAlarm",
-//                                                "ecs:DescribeServices",
-//                                                "ecs:UpdateService"
-//                                        )
-//                                )
-//                            }
-//                    )
-//            ))
-//        }
-//
-//        val ecsRole = role(
-//                assumeRolePolicyDocument = policyDocument { statement(action = action("sts:AssumeRole")) { principal(PrincipalType.SERVICE,listOf(+"ecs.amazonaws.com")) } }
-//                ){
-//            path("/")
-//            policies(listOf(
-//                    Policy(
-//                            policyName = +"ecs-service",
-//                            policyDocument = policyDocument {
-//                                statement(
-//                                        resource = allResources,
-//                                        action = actions(
-//                                                "ec2:AttachNetworkInterface",
-//                                                "ec2:CreateNetworkInterface",
-//                                                "ec2:CreateNetworkInterfacePermission",
-//                                                "ec2:DeleteNetworkInterface",
-//                                                "ec2:DeleteNetworkInterfacePermission",
-//                                                "ec2:Describe*",
-//                                                "ec2:DetachNetworkInterface",
-//                                                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-//                                                "elasticloadbalancing:DeregisterTargets",
-//                                                "elasticloadbalancing:Describe*",
-//                                                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-//                                                "elasticloadbalancing:RegisterTargets"
-//                                        )
-//                                )
-//                            }
-//                    )
-//            ))
-//        }
         val ecsTaskExecutionRole =  role(
                 assumeRolePolicyDocument = policyDocument { statement(action = action("sts:AssumeRole")) { principal(PrincipalType.SERVICE,listOf(+"ecs-tasks.amazonaws.com")) } }
         ){
@@ -127,11 +81,6 @@ class Stack: StackBuilder {
             securityGroups(listOf(loadBalancerGroup.ref()))
         }
 
-//        val ecsSecurityGroupIngressFromPublicALB = securityGroupIngress(ipProtocol = +"-1"){
-//            groupId(containerSecurityGroup.GroupId())
-//            sourceSecurityGroupId(loadBalancerGroup.GroupId())
-//        }
-
         val logGroupName = serviceName + "-service"
         val logGroup = logGroup { logGroupName(logGroupName) }
         logGroup.ref()
@@ -145,8 +94,6 @@ class Stack: StackBuilder {
             containerDefinitions(listOf(
                     ContainerDefinition(
                             name = serviceName.ref(),
-                            cpu = Value.Of(1024),
-                            memory = Value.Of(2048),
                             image = +"hexlabs/kotlin-playground",
                             portMappings = listOf(
                                     PortMapping(containerPort = Value.Of(80))
@@ -162,20 +109,35 @@ class Stack: StackBuilder {
                     )
             ))
         }
+        val defaultTargetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref())
         val targetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
-            healthCheckIntervalSeconds(6)
-            healthCheckPath("/")
-            healthCheckProtocol("HTTP")
-            healthCheckTimeoutSeconds(5)
-            healthyThresholdCount(2)
             targetType("ip")
             name(serviceName.ref())
             unhealthyThresholdCount(2)
+            matcher(+"200-299")
+            healthCheckIntervalSeconds(300)
+            healthCheckPath("/")
+            healthCheckProtocol("HTTP")
+            healthCheckTimeoutSeconds(30)
+            healthyThresholdCount(2)
+        }
+        val certificate = certificate(+"www.playground.hexlabs.io"){
+            subjectAlternativeNames(listOf(+"playground.hexlabs.io"))
+            domainValidationOptions(listOf(DomainValidationOption(
+                    domainName = +"playground.hexlabs.io",
+                    validationDomain = +"playground.hexlabs.io"
+            )))
+            validationMethod("DNS")
         }
         val listener = listener(dependsOn = listOf(loadBalancer.logicalName), defaultActions = listOf(Action(
-                targetGroupArn = targetGroup.ref(),
+                targetGroupArn = defaultTargetGroup.ref(),
                 type = +"forward"
-        )),loadBalancerArn = loadBalancer.ref(), port = Value.Of(80), protocol = +"HTTP")
+        )),loadBalancerArn = loadBalancer.ref(), port = Value.Of(443), protocol = +"HTTPS") {
+            sslPolicy("ELBSecurityPolicy-2016-08")
+            certificates(listOf(Certificate(
+                    certificateArn = certificate.ref()
+            )))
+        }
         val loadBalancerRule = listenerRule(
                 actions = listOf(RuleAction(
                         targetGroupArn = targetGroup.ref(),
@@ -183,7 +145,7 @@ class Stack: StackBuilder {
                 )),
                 conditions = listOf(RuleCondition(
                         field = +"path-pattern",
-                        values = +listOf(+"/")
+                        values = +listOf(+"/*")
                 )),
                 priority = Value.Of(1),
                 listenerArn = listener.ref()
@@ -194,7 +156,7 @@ class Stack: StackBuilder {
             launchType("FARGATE")
             deploymentConfiguration {
                 maximumPercent(200)
-                minimumHealthyPercent(100)
+                minimumHealthyPercent(70)
             }
             desiredCount(2)
             networkConfiguration {
