@@ -1,7 +1,4 @@
 package io.play
-
-import com.amazonaws.services.s3.AmazonS3Client
-import com.amazonaws.services.s3.model.GetObjectRequest
 import io.play.kotlin.CompletionProvider
 import io.play.kotlin.EnvironmentManager
 import io.play.kotlin.ErrorHandler
@@ -18,8 +15,7 @@ import org.http4k.lens.*
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.asServer
-import org.http4k.serverless.AppLoader
-import java.io.File
+
 
 fun main(args: Array<String>){
     root.asServer(SunHttp(80)).start()
@@ -44,9 +40,9 @@ val root = Filter{ next -> { it ->
         "/" bind Method.GET to { Response(Status.OK).body("Healthy") }
 ))
 
-object LambdaHandler: AppLoader{
-    override fun invoke(p1: Map<String, String>) = root
-}
+//object LambdaHandler: AppLoader{
+//    override fun invoke(p1: Map<String, String>) = root
+//}
 
 object RootHandler: HttpHandler{
     private val result = Body.auto<JavaExecuter.ExecutionResult>().toLens()

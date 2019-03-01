@@ -11,7 +11,7 @@
     <properties>
         <kotlin.version>1.3.0</kotlin.version>
         <http4k.version>3.98.0</http4k.version>
-        <kloudformation.version>0.1.100</kloudformation.version>
+        <kloudformation.version>0.1.106</kloudformation.version>
     </properties>
     <repositories>
         <repository>
@@ -24,6 +24,11 @@
             <groupId>io.kloudformation</groupId>
             <artifactId>kloudformation</artifactId>
             <version>${kloudformation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>kotlinpoet</artifactId>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -41,24 +46,8 @@
             <version>1.3.0</version>
         </dependency>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.11.442</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.http4k</groupId>
             <artifactId>http4k-core</artifactId>
-            <version>${http4k.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.http4k</groupId>
-            <artifactId>http4k-serverless-lambda</artifactId>
             <version>${http4k.version}</version>
         </dependency>
         <dependency>
@@ -116,10 +105,10 @@
                         </goals>
                         <configuration>
                             <excludeGroupIds>
-                                org.http4k,com.amazonaws,commons-ogging,org.apache.httpcomponents,com.squareup,org.jsoup
+                                org.http4k,com.amazonaws,commons-ogging,org.apache.httpcomponents,org.jsoup
                             </excludeGroupIds>
                             <excludeArtifactIds>
-                                kotlin-plugin,ion-java,joda-time,javax.servlet-api,annotations,commons-codec,commons-logging,jackson-dataformat-cbor,kotlin-compiler,kotlin-reflect,kotlin-script-runtime,kotlin-stdlib-jdk7
+                                kotlin-plugin,ion-java,joda-time,javax.servlet-api,annotations,commons-codec,commons-logging,jackson-dataformat-cbor,kotlin-compiler,kotlin-script-runtime,kotlin-stdlib-jdk7
                             </excludeArtifactIds>
                             <outputDirectory>${project.basedir}/lib</outputDirectory>
                         </configuration>

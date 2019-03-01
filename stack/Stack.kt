@@ -36,15 +36,15 @@ class Stack: StackBuilder {
         val subnetB = parameter<String>("SubnetB", default = "subnet-cfc11895")
 
         val cluster = cluster()
-        val containerSecurityGroup = securityGroup(+"Access to the Fargate containers"){
+        val containerSecurityGroup = securityGroup(+"Access to the Fargate containers") {
             vpcId(vpcId.ref())
             securityGroupIngress(listOf(
                     Ingress(cidrIp = +"0.0.0.0/0", ipProtocol = +"-1")
             ))
         }
-        val ecsTaskExecutionRole =  role(
-                assumeRolePolicyDocument = policyDocument { statement(action = action("sts:AssumeRole")) { principal(PrincipalType.SERVICE,listOf(+"ecs-tasks.amazonaws.com")) } }
-        ){
+        val ecsTaskExecutionRole = role(
+                assumeRolePolicyDocument = policyDocument { statement(action = action("sts:AssumeRole")) { principal(PrincipalType.SERVICE, listOf(+"ecs-tasks.amazonaws.com")) } }
+        ) {
             path("/")
             policies(listOf(
                     Policy(
@@ -66,7 +66,7 @@ class Stack: StackBuilder {
             ))
         }
 
-        val loadBalancerGroup = securityGroup(groupDescription = +"Access to load balancer"){
+        val loadBalancerGroup = securityGroup(groupDescription = +"Access to load balancer") {
             vpcId(vpcId.ref())
             securityGroupIngress(listOf(
                     Ingress(cidrIp = +"0.0.0.0/0", ipProtocol = +"-1")
@@ -101,7 +101,7 @@ class Stack: StackBuilder {
                             logConfiguration = LogConfiguration(
                                     logDriver = +"awslogs",
                                     options = mapOf(
-                                           "awslogs-group" to  logGroupName,
+                                            "awslogs-group" to logGroupName,
                                             "awslogs-region" to awsRegion,
                                             "awslogs-stream-prefix" to serviceName.ref()
                                     )
@@ -109,8 +109,15 @@ class Stack: StackBuilder {
                     )
             ))
         }
-        val defaultTargetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref())
-        val targetGroup = targetGroup(port = Value.Of(80),protocol = +"HTTP",vpcId = vpcId.ref()){
+        val defaultTargetGroup = targetGroup {
+            port(80)
+            protocol("HTTP")
+            vpcId(vpcId.ref())
+        }
+        val targetGroup = targetGroup{
+            port(80)
+            protocol("HTTP")
+            vpcId(vpcId.ref())
             targetType("ip")
             name(serviceName.ref())
             unhealthyThresholdCount(2)
@@ -121,7 +128,7 @@ class Stack: StackBuilder {
             healthCheckTimeoutSeconds(30)
             healthyThresholdCount(2)
         }
-        val certificate = certificate(+"www.playground.hexlabs.io"){
+        val certificate = certificate(+"www.playground.hexlabs.io") {
             subjectAlternativeNames(listOf(+"playground.hexlabs.io"))
             domainValidationOptions(listOf(DomainValidationOption(
                     domainName = +"playground.hexlabs.io",
@@ -132,7 +139,7 @@ class Stack: StackBuilder {
         val listener = listener(dependsOn = listOf(loadBalancer.logicalName), defaultActions = listOf(Action(
                 targetGroupArn = defaultTargetGroup.ref(),
                 type = +"forward"
-        )),loadBalancerArn = loadBalancer.ref(), port = Value.Of(443), protocol = +"HTTPS") {
+        )), loadBalancerArn = loadBalancer.ref(), port = Value.Of(443), protocol = +"HTTPS") {
             sslPolicy("ELBSecurityPolicy-2016-08")
             certificates(listOf(Certificate(
                     certificateArn = certificate.ref()
@@ -150,7 +157,7 @@ class Stack: StackBuilder {
                 priority = Value.Of(1),
                 listenerArn = listener.ref()
         )
-        service(dependsOn = listOf(loadBalancerRule.logicalName),taskDefinition = task.ref()){
+        service(dependsOn = listOf(loadBalancerRule.logicalName), taskDefinition = task.ref()) {
             serviceName(serviceName.ref())
             cluster(cluster.ref())
             launchType("FARGATE")
@@ -166,7 +173,7 @@ class Stack: StackBuilder {
                 }
             }
             loadBalancers(listOf(
-                    loadBalancer(Value.Of(80)){
+                    loadBalancer(Value.Of(80)) {
                         containerName(serviceName.ref())
                         targetGroupArn(targetGroup.ref())
                     }
