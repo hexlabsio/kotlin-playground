@@ -13,23 +13,7 @@
         <http4k.version>3.98.0</http4k.version>
         <kloudformation.version>0.1.106</kloudformation.version>
     </properties>
-    <repositories>
-        <repository>
-            <id>bintray-maven</id>
-            <url>https://dl.bintray.com/hexlabsio/kloudformation</url>
-        </repository>
-    </repositories>
     <dependencies>
-        <dependency>
-            <groupId>io.kloudformation</groupId>
-            <artifactId>kloudformation</artifactId>
-            <version>${kloudformation.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>kotlinpoet</artifactId>
-            <version>1.0.1</version>
-        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
@@ -105,7 +89,7 @@
                         </goals>
                         <configuration>
                             <excludeGroupIds>
-                                org.http4k,com.amazonaws,commons-ogging,org.apache.httpcomponents,org.jsoup
+                                org.http4k,com.amazonaws,commons-ogging,org.apache.httpcomponents,org.jsoup,io.kloudformation,com.fasterxml.jackson,com.squareup,org.yaml
                             </excludeGroupIds>
                             <excludeArtifactIds>
                                 kotlin-plugin,ion-java,joda-time,javax.servlet-api,annotations,commons-codec,commons-logging,jackson-dataformat-cbor,kotlin-compiler,kotlin-script-runtime,kotlin-stdlib-jdk7

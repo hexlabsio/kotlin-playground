@@ -9,13 +9,13 @@ RUN apk add --no-cache bash && \
     rm -f kotlinc/bin/*.bat && \
     apk del --no-cache build-dependencies
 
-
+COPY executor.policy /app/executor.policy
 COPY lib /app/lib
 COPY target/playground* /app/playground.jar
 
 ENV PATH $PATH:/usr/lib/kotlinc/bin
 
-EXPOSE 8080
+EXPOSE 80
 
 WORKDIR app
 
