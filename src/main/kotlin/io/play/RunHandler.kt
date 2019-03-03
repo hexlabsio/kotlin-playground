@@ -35,7 +35,6 @@ object RunHandler {
         }
         return arrayOf(
                 "java",
-                "-Djava.security.debug=access:failure",
                 "-Djava.security.manager",
                 "-Djava.security.policy=executor.policy",
                 "-classpath"
