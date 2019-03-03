@@ -28,18 +28,21 @@ object RunHandler {
 
     private fun argsFrom(compilationResult: KotlinWrapper.CompilationResult): Array<String>{
         val outputDir = Paths.get(basePath,"generated", abs(Random().nextInt()).toString())
+        val policy = File("executor.policy").readText().replace("%%GENERATED%%", outputDir.toString()).replace("%%LIB_DIR%%",EnvironmentManager.basePath)
+        val executorPolicy = outputDir.resolve("executor.policy").toString()
         compilationResult.files.forEach { name, bytes ->
             val path = outputDir.resolve(name)
             path.parent.toFile().mkdirs()
             Files.write(path, bytes)
         }
+        File(executorPolicy).writeText(policy)
         return arrayOf(
-                "java",
-                "-Djava.security.manager",
-                "-Djava.security.policy=executor.policy",
-                "-classpath"
-        ) + (EnvironmentManager.classPathUris + outputDir.toFile()).foldIndexed("") { index, acc, file -> acc + (if(index > 0) ":" else "") + file.absoluteFile} +
-                compilationResult.mainClass
+                    "java",
+                    "-Djava.security.manager",
+                    "-Djava.security.policy=$executorPolicy",
+                    "-classpath"
+            ) + (EnvironmentManager.classPathUris + outputDir.toFile()).foldIndexed("") { index, acc, file -> acc + (if(index > 0) ":" else "") + file.absoluteFile} +
+                    compilationResult.mainClass
     }
 }
 

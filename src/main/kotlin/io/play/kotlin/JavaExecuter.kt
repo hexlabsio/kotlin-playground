@@ -1,6 +1,5 @@
 package io.play.kotlin
 
-import org.http4k.format.Jackson
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -12,11 +11,13 @@ object JavaExecuter{
     open class ExecutionResult(open val errors: Map<String, List<ErrorHandler.ErrorDescriptor>> = emptyMap())
     data class JavaExecutionResult(val text: String, val exception: ExceptionDescriptor? = null, override val errors: Map<String, List<ErrorHandler.ErrorDescriptor>> = emptyMap()): ExecutionResult(errors)
     data class StackTraceElement(val className: String, val methodName: String, val fileName: String, val lineNumber: Int)
-    data class ExceptionDescriptor(val message: String, val fullName: String, val stackTrace: List<StackTraceElement>, val cause: ExceptionDescriptor)
+    data class ExceptionDescriptor(val message: String, val fullName: String, val stackTrace: List<StackTraceElement> = emptyList(), val cause: ExceptionDescriptor? = null)
 
-    data class ProgramOutput(val standardOutput: String, val errorOutput: String){
+    data class ProgramOutput(val standardOutput: String, val errorOutput: String, val exception: Exception? = null){
         fun asExecutionResult(): ExecutionResult{
-            return JavaExecutionResult(text = "<outStream>$standardOutput\n</outStream>")
+            return JavaExecutionResult(text = "<outStream>$standardOutput\n</outStream>", exception =exception?.let {
+                JavaExecuter.ExceptionDescriptor(it.message ?: "no message", it::class.java.toString())
+            })
         }
     }
 
@@ -44,8 +45,11 @@ object JavaExecuter{
                     e.printStackTrace()
                 }
             }
-            if(errorText.toString().isNotEmpty())error(errorText.toString())
-            ProgramOutput(standardText.toString(), errorText.toString()).asExecutionResult()
+            val exception = if(errorText.toString().isNotEmpty()) {
+                println(errorText.toString())
+                Exception(errorText.toString())
+            } else null
+            ProgramOutput(standardText.toString(), errorText.toString(), exception).asExecutionResult()
         }
     }
 
