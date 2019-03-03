@@ -72,8 +72,7 @@
                     </goals>
                     <configuration>
                         <sourceDirs>
-                            <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
-                            <sourceDir>${project.basedir}/stack</sourceDir>
+                            <sourceDir>${project.basedir}/src/test/kotlin</sourceDir
                         </sourceDirs>
                     </configuration>
                 </execution>
@@ -125,27 +124,6 @@
                                     <mainClass>io.play.RootHandlerKt</mainClass>
                                 </transformer>
                             </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.4.0</version>
-                <executions>
-                    <execution>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>io.kloudformation.StackBuilderKt</mainClass>
-                            <arguments>
-                                <argument>Stack</argument>
-                                <argument>${project.basedir}/template.yml</argument>
-                            </arguments>
-                            <classpathScope>test</classpathScope>
                         </configuration>
                     </execution>
                 </executions>
