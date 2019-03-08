@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
 group = "io.hexlabs"
-version = "1.0-SNAPSHOT"
+version = "0.1-SNAPSHOT"
 
 plugins {
     kotlin("jvm") version "1.3.20"
@@ -59,4 +59,32 @@ object Props {
     private const val kotlinId = "1907319"
     private const val kotlinPluginRelease = "release-IJ2018.1-1"
     const val kotlinPluginLocation = "$kotlinRepository/$kotlinId:id/$kotlinPluginArtifact-$kotlinVersion-$kotlinPluginRelease.zip!/Kotlin/lib/$kotlinPluginArtifact.jar"
+}
+group = "hexlabs.io"
+version = "0.1-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(kotlin("stdlib-jdk8"))
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
+group = "io.hexlabs"
+version = "0.1-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(kotlin("stdlib-jdk8"))
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
 }
