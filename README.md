@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/hexlabsio/kotlin-playground-server/tree/master.svg?style=svg)](https://circleci.com/gh/hexlabsio/kotlin-playground-server/tree/master)
+[![CircleCI](https://circleci.com/gh/hexlabsio/kotlin-playground/tree/master.svg?style=svg)](https://circleci.com/gh/hexlabsio/kotlin-playground/tree/master)
 <a href="http://kotlinlang.org"><img alt="kotlin" src="https://img.shields.io/badge/kotlin-1.3-blue.svg"></a>
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
