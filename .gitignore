@@ -6,3 +6,4 @@ target
 template.yml
 build
 src/main/resources/configuration.properties
+.gradle
