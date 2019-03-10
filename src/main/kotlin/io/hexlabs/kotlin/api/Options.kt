@@ -40,11 +40,23 @@ class Options(
         names = ["-health-body"],
         description = "Sets Health Endpoint Response Body"
     )
-    var healthBody: String = "Healthy"
+    var healthBody: String = "Healthy",
+    @Parameter(
+        names = ["-cors"],
+        description = "Enables CORS Headers"
+    )
+    var cors: Boolean = false,
+    @Parameter(names = ["-cors-allowed-methods", "-cam"], description = "CORS Allowed Methods")
+    var corsAllowedMethods: List<String> = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "PATCH", "PURGE", "HEAD"),
+    @Parameter(names = ["-cors-allowed-headers", "-cah"], description = "CORS Allowed Headers")
+    var corsAllowedHeaders: List<String> = listOf("content-type"),
+    @Parameter(names = ["-cors-allowed-origin", "-cao"], description = "CORS Allowed Origin")
+    var corsAllowedOrigins: List<String> = listOf("*"),
+    val kotlinVersion: String = "1.3.0"
 )
 
 class FileConverter : IStringConverter<File> {
     override fun convert(value: String): File {
-        return File(value).also { if(!it.exists()) it.mkdirs() }
+        return File(value).also { if (!it.exists()) it.mkdirs() }
     }
 }
