@@ -15,7 +15,7 @@ class PlaygroundTest {
     inner class KotlinVersions {
         @Test
         fun `should return version info matching input kotlin version`(){
-            val response = RootHandler(Options(kotlinVersion = "1.5.6"))(Request(Method.GET, "/kotlinServer/getKotlinVersions"))
+            val response = RootHandler(Options(kotlinVersion = "1.5.6"))(Request(Method.GET, "/kotlinServer?type=getKotlinVersions"))
             val bodyNode = Jackson.body().toLens()(response)
             expect(true, "Body should be an array") { bodyNode.isArray }
             with(bodyNode.elements().asSequence().toList()){
