@@ -23,6 +23,7 @@ repositories {
 
 dependencies {
     File("src/main/resources/configuration.properties").apply{
+        parentFile.mkdirs()
         writeText("""
             build.version=$version
             kotlin.version=$kotlinVersion
