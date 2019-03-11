@@ -5,9 +5,9 @@
 
 # Kotlin Playground
 
-This is a copy and simplification of ![JetBrains/kotlin-web-demo]("https://github.com/JetBrains/kotlin-web-demo") written completely in Kotlin.
+This is a copy and simplification of [JetBrains/kotlin-web-demo](https://github.com/JetBrains/kotlin-web-demo) written completely in Kotlin.
 
-Once deployed you can point ![JetBrains/kotlin-playground]("https://github.com/JetBrains/kotlin-playground") at your server.
+Once deployed you can point [JetBrains/kotlin-playground](https://github.com/JetBrains/kotlin-playground) at your server.
 
 ```javascript
 playground("code", { server: "https://your.kotlin.playground" });
