@@ -78,7 +78,7 @@ class RootHandlerTest {
     }
 }
 
-private enum class CORS(val header: String){
+private enum class CORS(val header: String) {
     HEADERS("Access-control-allow-headers"),
     METHODS("Access-control-allow-methods"),
     ORIGINS("Access-control-allow-origin")

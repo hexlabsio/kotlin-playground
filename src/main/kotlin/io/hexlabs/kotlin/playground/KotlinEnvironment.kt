@@ -2,8 +2,9 @@ package io.hexlabs.kotlin.playground
 
 import com.intellij.openapi.Disposable
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNameHelper.getPresentableText
 import com.intellij.psi.tree.TokenSet
+import io.hexlabs.kotlin.playground.model.Analysis
+import io.hexlabs.kotlin.playground.model.Completion
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -17,7 +18,15 @@ import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.container.getService
-import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor
+import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
+import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LocalVariableDescriptor
 import org.jetbrains.kotlin.descriptors.impl.TypeParameterDescriptorImpl
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
@@ -41,58 +50,58 @@ import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.types.asFlexibleType
 import org.jetbrains.kotlin.types.isFlexible
 import java.io.File
-import java.util.*
-data class DescriptorInfo(val isTipsManagerCompletion: Boolean, val descriptors: List<DeclarationDescriptor>)
-data class CompletionVariant(val text: String, val displayText: String, val tail: String, val icon: String)
+import java.util.UUID
+
 data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
+
+    private data class DescriptorInfo(val isTipsManagerCompletion: Boolean, val descriptors: List<DeclarationDescriptor>)
 
     fun complete(file: KotlinFile, line: Int, character: Int) = with(file.insert("xxxxxxxxxxxxxxxxxxxxxxx ", line, character)) {
         elementAt(line, character)?.let { element ->
             val descriptorInfo = descriptorsFrom(this, element)
-            val prefix = (if(descriptorInfo.isTipsManagerCompletion) element.text else element.parent.text)
-                .substringBefore("xxxxxxxxxxxxxxxxxxxxxxx").let { if(it.endsWith(".")) "" else it }
+            val prefix = (if (descriptorInfo.isTipsManagerCompletion) element.text else element.parent.text)
+                .substringBefore("xxxxxxxxxxxxxxxxxxxxxxx").let { if (it.endsWith(".")) "" else it }
             descriptorInfo.descriptors.toMutableList().apply {
                 sortWith(Comparator { a, b ->
                     val (a1, a2) = a.presentableName()
                     val (b1, b2) = b.presentableName()
                     ("$a1$a2").compareTo("$b1$b2", true)
-                })}.mapNotNull { descriptor -> completionVariantFor(prefix, descriptor) } + keywordsCompletionVariants(KtTokens.KEYWORDS, prefix) + keywordsCompletionVariants(KtTokens.SOFT_KEYWORDS, prefix)
+                }) }.mapNotNull { descriptor -> completionVariantFor(prefix, descriptor) } + keywordsCompletionVariants(KtTokens.KEYWORDS, prefix) + keywordsCompletionVariants(KtTokens.SOFT_KEYWORDS, prefix)
         } ?: emptyList()
     }
 
-    private fun completionVariantFor(prefix: String, descriptor: DeclarationDescriptor): CompletionVariant? {
+    private fun completionVariantFor(prefix: String, descriptor: DeclarationDescriptor): Completion? {
         val (name, tail) = descriptor.presentableName()
         val fullName: String = formatName(name, 40)
         var completionText = fullName
         var position = completionText.indexOf('(')
-        if(position != -1){
-            if(completionText[position-1] == ' ') position -= 2
-            if(completionText[position+1] == ')') position++
+        if (position != -1) {
+            if (completionText[position - 1] == ' ') position -= 2
+            if (completionText[position + 1] == ')') position++
             completionText = completionText.substring(0, position + 1)
         }
         position = completionText.indexOf(":")
-        if(position != -1) completionText = completionText.substring(0, position - 1)
-        return if(prefix.isEmpty() || fullName.startsWith(prefix)){
-            CompletionVariant(completionText, fullName, tail, iconFrom(descriptor))
+        if (position != -1) completionText = completionText.substring(0, position - 1)
+        return if (prefix.isEmpty() || fullName.startsWith(prefix)) {
+            Completion(completionText, fullName, tail, iconFrom(descriptor))
         } else null
     }
 
-    private fun DeclarationDescriptor.presentableName() = when(this){
+    private fun DeclarationDescriptor.presentableName() = when (this) {
         is FunctionDescriptor -> name.asString() + renderer.renderFunctionParameters(this) to when {
             returnType != null -> renderer.renderType(returnType!!)
-            else ->  (extensionReceiverParameter?.let { param ->
+            else -> (extensionReceiverParameter?.let { param ->
                 " for ${renderer.renderType(param.type)} in ${DescriptorUtils.getFqName(containingDeclaration)}"
             } ?: "")
         }
-        else -> name.asString() to when(this){
+        else -> name.asString() to when (this) {
             is VariableDescriptor -> renderer.renderType(type)
             is ClassDescriptor -> " (${DescriptorUtils.getFqName(containingDeclaration)})"
             else -> renderer.render(this)
         }
     }
 
-
-    private val renderer = IdeDescriptorRenderers.SOURCE_CODE.withOptions{
+    private val renderer = IdeDescriptorRenderers.SOURCE_CODE.withOptions {
         classifierNamePolicy = ClassifierNamePolicy.SHORT
         typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
         parameterNameRenderingPolicy = ParameterNameRenderingPolicy.NONE
@@ -102,7 +111,7 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
         }
     }
 
-    private fun iconFrom(descriptor: DeclarationDescriptor) = when(descriptor) {
+    private fun iconFrom(descriptor: DeclarationDescriptor) = when (descriptor) {
         is FunctionDescriptor -> "method"
         is PropertyDescriptor -> "property"
         is LocalVariableDescriptor -> "property"
@@ -114,35 +123,35 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
         else -> ""
     }
 
-    private fun formatName(builder: String, symbols: Int) =  if (builder.length > symbols) builder.substring(0, symbols) + "..." else builder
+    private fun formatName(builder: String, symbols: Int) = if (builder.length > symbols) builder.substring(0, symbols) + "..." else builder
 
     private fun keywordsCompletionVariants(keywords: TokenSet, prefix: String) = keywords.types.mapNotNull {
-        if (it is KtKeywordToken && it.value.startsWith(prefix)) CompletionVariant(it.value, it.value, "", "") else null
+        if (it is KtKeywordToken && it.value.startsWith(prefix)) Completion(it.value, it.value, "", "") else null
     }
-    private fun Analysis.referenceVariantsFrom(element: PsiElement) = when(element){
+    private fun Analysis.referenceVariantsFrom(element: PsiElement) = when (element) {
         is KtSimpleNameExpression -> ReferenceVariantsHelper(
             analysisResult.bindingContext,
             resolutionFacade = KotlinResolutionFacade(kotlinEnvironment.project, componentProvider),
             moduleDescriptor = analysisResult.moduleDescriptor,
             visibilityFilter = { true }
-        ).getReferenceVariants(element, DescriptorKindFilter.ALL, {true}, true, true, true, null).toList()
+        ).getReferenceVariants(element, DescriptorKindFilter.ALL, { true }, true, true, true, null).toList()
         else -> null
     }
     private fun descriptorsFrom(file: KotlinFile, element: PsiElement): DescriptorInfo =
         with(analysisOf(file)) {
             (referenceVariantsFrom(element) ?: referenceVariantsFrom(element.parent))?.let {
                     descriptors -> DescriptorInfo(true, descriptors)
-            } ?: element.parent.let{ parent -> DescriptorInfo(
+            } ?: element.parent.let { parent -> DescriptorInfo(
                     isTipsManagerCompletion = false,
-                    descriptors = when(parent) {
+                    descriptors = when (parent) {
                         is KtQualifiedExpression -> {
                             analysisResult.bindingContext.get(BindingContext.EXPRESSION_TYPE_INFO, parent.receiverExpression)?.type?.let {
                                 expressionType -> analysisResult.bindingContext.get(BindingContext.LEXICAL_SCOPE, parent.receiverExpression)?.let {
-                                    expressionType.memberScope.getContributedDescriptors(DescriptorKindFilter.ALL,MemberScope.ALL_NAME_FILTER)
+                                    expressionType.memberScope.getContributedDescriptors(DescriptorKindFilter.ALL, MemberScope.ALL_NAME_FILTER)
                                 }
                             }?.toList() ?: emptyList()
                         }
-                        else ->  analysisResult.bindingContext.get(BindingContext.LEXICAL_SCOPE, element as KtExpression)
+                        else -> analysisResult.bindingContext.get(BindingContext.LEXICAL_SCOPE, element as KtExpression)
                             ?.getContributedDescriptors(DescriptorKindFilter.ALL, MemberScope.ALL_NAME_FILTER)
                             ?.toList() ?: emptyList()
                     }
@@ -151,22 +160,25 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
         }
 
     private fun analysisOf(file: KotlinFile): Analysis = CliBindingTrace().let { trace ->
-            val componentProvider = TopDownAnalyzerFacadeForJVM.createContainer(
-                kotlinEnvironment.project,
-                listOf(file.kotlinFile),
-                trace,
-                kotlinEnvironment.configuration,
-                { globalSearchScope -> kotlinEnvironment.createPackagePartProvider(globalSearchScope) },
-                { storageManager, ktFiles -> FileBasedDeclarationProviderFactory(storageManager, ktFiles) },
-                TopDownAnalyzerFacadeForJVM.newModuleSearchScope(file.kotlinFile.project, listOf(file.kotlinFile))
-            )
-            componentProvider.getService(LazyTopDownAnalyzer::class.java)
-                .analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, listOf(file.kotlinFile), DataFlowInfo.EMPTY)
-            val moduleDescriptor = componentProvider.getService(ModuleDescriptor::class.java)
-            AnalysisHandlerExtension.getInstances(file.kotlinFile.project)
-                .find { it.analysisCompleted(file.kotlinFile.project, moduleDescriptor, trace, listOf(file.kotlinFile)) != null }
-            Analysis(componentProvider, AnalysisResult.success(trace.bindingContext, moduleDescriptor))
-        }
+        val componentProvider = TopDownAnalyzerFacadeForJVM.createContainer(
+            kotlinEnvironment.project,
+            listOf(file.kotlinFile),
+            trace,
+            kotlinEnvironment.configuration,
+            { globalSearchScope -> kotlinEnvironment.createPackagePartProvider(globalSearchScope) },
+            { storageManager, ktFiles -> FileBasedDeclarationProviderFactory(storageManager, ktFiles) },
+            TopDownAnalyzerFacadeForJVM.newModuleSearchScope(file.kotlinFile.project, listOf(file.kotlinFile))
+        )
+        componentProvider.getService(LazyTopDownAnalyzer::class.java)
+            .analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, listOf(file.kotlinFile), DataFlowInfo.EMPTY)
+        val moduleDescriptor = componentProvider.getService(ModuleDescriptor::class.java)
+        AnalysisHandlerExtension.getInstances(file.kotlinFile.project)
+            .find { it.analysisCompleted(file.kotlinFile.project, moduleDescriptor, trace, listOf(file.kotlinFile)) != null }
+        Analysis(
+            componentProvider,
+            AnalysisResult.success(trace.bindingContext, moduleDescriptor)
+        )
+    }
 
     companion object {
         fun with(classpath: List<File>) = KotlinEnvironment(KotlinCoreEnvironment.createForTests(
@@ -185,4 +197,3 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
         ))
     }
 }
-

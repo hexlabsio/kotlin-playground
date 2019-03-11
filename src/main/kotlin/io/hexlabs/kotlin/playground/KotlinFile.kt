@@ -14,7 +14,7 @@ class KotlinFile(val kotlinFile: KtFile) {
 
     fun elementAt(line: Int, character: Int): PsiElement? = kotlinFile.findElementAt(offsetFor(line, character))?.let { expressionFor(it) }
 
-    fun insert(content: String, atLine: Int, atCharacter: Int): KotlinFile{
+    fun insert(content: String, atLine: Int, atCharacter: Int): KotlinFile {
         val caretPositionOffset = offsetFor(atLine, atCharacter)
         return if (caretPositionOffset != 0) {
             KotlinFile.from(kotlinFile.project, kotlinFile.name,
@@ -27,9 +27,8 @@ class KotlinFile(val kotlinFile: KtFile) {
 
     private fun offsetFor(line: Int, character: Int) = (kotlinFile.viewProvider.document?.getLineStartOffset(line) ?: 0) + character
 
-    private tailrec fun expressionFor(element: PsiElement):PsiElement =
-        if(element is KtExpression) element else expressionFor(element.parent)
-
+    private tailrec fun expressionFor(element: PsiElement): PsiElement =
+        if (element is KtExpression) element else expressionFor(element.parent)
 
     companion object {
         fun from(project: Project, name: String, content: String) =

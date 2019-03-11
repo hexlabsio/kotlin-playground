@@ -1,4 +1,4 @@
-package io.hexlabs.kotlin.playground
+package io.hexlabs.kotlin.api
 
 enum class Operations(val endpoint: String, val requiresBody: Boolean) {
     KOTLIN_VERSIONS("getKotlinVersions", false),

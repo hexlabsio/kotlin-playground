@@ -1,4 +1,4 @@
-package io.hexlabs.kotlin.playground
+package io.hexlabs.kotlin.playground.model
 
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.container.ComponentProvider

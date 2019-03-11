@@ -1,8 +1,12 @@
 package io.hexlabs.kotlin.api
 
 import com.beust.jcommander.JCommander
-import io.hexlabs.kotlin.playground.Configuration
-import org.http4k.core.*
+import io.hexlabs.kotlin.playground.model.Configuration
+import org.http4k.core.then
+import org.http4k.core.Method
+import org.http4k.core.Response
+import org.http4k.core.Status
+import org.http4k.core.Body
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.filter.CorsPolicy
@@ -10,10 +14,16 @@ import org.http4k.filter.ServerFilters
 import org.http4k.format.Jackson.auto
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
-import java.util.*
+import java.util.Properties
 
 val RootHandler = { options: Options ->
-    val playground = PlaygroundHandler(Configuration(libs = options.libs, disableSecurity = options.disableSecurity, kotlinVersion = options.kotlinVersion))
+    val playground = PlaygroundHandler(
+        Configuration(
+            libs = options.libs,
+            disableSecurity = options.disableSecurity,
+            kotlinVersion = options.kotlinVersion
+        )
+    )
     Filters.TRACING
         .then(Filters.CATCH_ALL)
         .let { if (options.cors) it.then(ServerFilters.Cors(CorsPolicy(options.corsAllowedOrigins, options.corsAllowedHeaders, options.corsAllowedMethods.map { m -> Method.valueOf(m) }))) else it }
@@ -30,11 +40,11 @@ val RootHandler = { options: Options ->
         )
 }
 
-inline fun <reified T: Any> bodyAs(item: T): (Response) -> Response = Body.auto<T>().toLens().of(item)
+inline fun <reified T : Any> bodyAs(item: T): (Response) -> Response = Body.auto<T>().toLens().of(item)
 
 fun main(args: Array<String>) {
     val properties = Properties().apply { load(Thread.currentThread().contextClassLoader.getResourceAsStream("configuration.properties")) }
-    println(properties.toList().joinToString(", "){ (key, value) -> "$key = $value" })
+    println(properties.toList().joinToString(", ") { (key, value) -> "$key = $value" })
     val kotlinVersion = properties["kotlin.version"]?.toString() ?: "1.3.0"
     Options(kotlinVersion = kotlinVersion).apply { JCommander.newBuilder().addObject(this).build().parse(*args) }.apply {
         RootHandler(this).asServer(SunHttp(port)).start()
