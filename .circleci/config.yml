@@ -8,4 +8,4 @@ jobs:
     - checkout
     - run:
         name: HELLO
-        command: echo Hello
+        command: echo Hello from branch $CIRCLE_BRANCH

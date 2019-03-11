@@ -10,12 +10,12 @@ import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.lens.Query
-import org.http4k.routing.bind
 import org.http4k.routing.routes
 
 class PlaygroundHandler(private val configuration: Configuration){
     val playgroundRoutes = routes(
-        "/" bind Method.GET to ::getRoute
+        Method.GET to ::getRoute,
+        Method.POST to ::postRoute
     )
 
     private fun getRoute(request: Request): Response {
@@ -25,7 +25,16 @@ class PlaygroundHandler(private val configuration: Configuration){
                 build = configuration.kotlinVersion,
                 stdlibVersion = configuration.kotlinVersion
             ))))
-            null -> Response(NOT_FOUND).body("Expected the type query parameter to be ${Operations.values().filter { !it.requiresBody }.joinToString(" or "){ it.endpoint }}")
+            else -> Response(NOT_FOUND).body(textForNotFoundOperations(post = false))
         }
     }
+
+    private fun postRoute(request: Request): Response {
+        return when (Operations.from(Query.required("type")(request), requiresBody = true)) {
+            Operations.COMPLETE -> Response(OK).with(bodyAs(listOf("Hello")))
+            else -> Response(NOT_FOUND).body(textForNotFoundOperations(post = true))
+        }
+    }
+
+    private fun textForNotFoundOperations(post: Boolean) = "Expected the type query parameter to be ${Operations.values().filter { it.requiresBody == post }.joinToString(" or "){ it.endpoint }}"
 }

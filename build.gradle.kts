@@ -12,7 +12,7 @@ group = "io.hexlabs"
 version = "0.1-SNAPSHOT"
 
 plugins {
-    kotlin("jvm") version "1.3.20"
+    kotlin("jvm") version "1.3.21"
     id("org.jlleitschuh.gradle.ktlint") version "6.3.1"
 }
 
@@ -57,9 +57,7 @@ tasks.withType<Test> {
 
 fun dependencyFrom(url: String, artifact: String, version: String) = File("$buildDir/download/$artifact-$version.jar").let { file ->
     file.parentFile.mkdirs()
-    if (!file.exists()) {
-        file.writeText(URL(url).readText())
-    }
+    file.writeBytes(URL(url).readBytes())
     files(file.absolutePath)
 }
 
@@ -68,12 +66,12 @@ fun DependencyHandlerScope.compile(group: String, version: String, dependencies:
 }
 
 object Props {
-    const val kotlinVersion = "1.3.20"
+    const val kotlinVersion = "1.3.21"
     const val http4kVersion = "3.115.1"
     const val kotlinPluginArtifact = "kotlin-plugin"
     private const val kotlinRepository = "Kotlin_1320_CompilerAllPlugins"
-    private const val kotlinId = "1907319"
-    private const val kotlinPluginRelease = "release-IJ2018.1-1"
+    private const val kotlinId = "1937367"
+    private const val kotlinPluginRelease = "release-IJ2018.3-1"
     const val kotlinPluginLocation = "$kotlinRepository/$kotlinId:id/$kotlinPluginArtifact-$kotlinVersion-$kotlinPluginRelease.zip!/Kotlin/lib/$kotlinPluginArtifact.jar"
 }
 

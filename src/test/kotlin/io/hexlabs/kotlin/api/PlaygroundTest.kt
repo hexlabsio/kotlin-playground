@@ -1,5 +1,7 @@
 package io.hexlabs.kotlin.api
 
+import io.hexlabs.kotlin.playground.KotlinEnvironment
+import io.hexlabs.kotlin.playground.KotlinFile
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.format.Jackson
@@ -10,6 +12,20 @@ import kotlin.test.expect
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PlaygroundTest {
+
+    @Nested
+    inner class KotlinComplete {
+       // @Test
+        fun `should return `(){
+            val response = RootHandler(Options())(Request(Method.POST, "/kotlinServer?type=complete"))
+            val bodyNode = Jackson.body().toLens()(response)
+            expect(true, "Body should be an array") { bodyNode.isArray }
+            val environment = KotlinEnvironment.with(emptyList())
+            val file = KotlinFile.from(environment.kotlinEnvironment.project,"Test", "fun main() { \"hello\". }")
+            val element = environment.complete(file, 0, 21)
+            println(file)
+        }
+    }
 
     @Nested
     inner class KotlinVersions {
