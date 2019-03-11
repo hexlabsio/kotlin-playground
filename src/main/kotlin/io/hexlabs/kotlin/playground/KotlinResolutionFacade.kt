@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
 class KotlinResolutionFacade(override val project: Project, private val componentProvider: ComponentProvider) : ResolutionFacade {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : Any> getFrontendService(serviceClass: Class<T>) = componentProvider.resolve(serviceClass)?.getValue() as T
     override val moduleDescriptor: ModuleDescriptor get() = TODO("not implemented")
     override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext = TODO("not implemented")

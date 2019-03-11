@@ -12,7 +12,7 @@ version = "0.1-SNAPSHOT"
 
 plugins {
     kotlin("jvm") version "1.3.21"
-    id("org.jlleitschuh.gradle.ktlint") version "6.3.1"
+    id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
 }
 
 repositories {
