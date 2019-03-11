@@ -10,8 +10,11 @@ jobs:
         keys:
         - gradle-{{ checksum "build.gradle.kts" }}
     - run:
+        name: Gradle Clean
+        command: ./gradlew clean
+    - run:
         name: Gradle Build
-        command: ./gradlew clean build -DBUILD_NUM=$CIRCLE_BUILD_NUM
+        command: ./gradlew build -DBUILD_NUM=$CIRCLE_BUILD_NUM
 #    - run:
 #        name: Bintray Upload
 #        command: ./gradlew bintrayUpload -DBUILD_NUM=$CIRCLE_BUILD_NUM -DBINTRAY_KEY=$BINTRAY_KEY

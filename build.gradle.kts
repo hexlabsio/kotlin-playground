@@ -2,7 +2,6 @@ import Build_gradle.Props.http4kVersion
 import Build_gradle.Props.kotlinPluginArtifact
 import Build_gradle.Props.kotlinPluginLocation
 import Build_gradle.Props.kotlinVersion
-import jdk.nashorn.internal.objects.NativeArray.forEach
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
