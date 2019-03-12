@@ -1,15 +1,28 @@
 package io.hexlabs.kotlin.api
 
+import io.hexlabs.kotlin.playground.KotlinEnvironment
+import io.hexlabs.kotlin.playground.KotlinFile
 import org.http4k.core.Method
 import org.http4k.core.Request
+import org.http4k.core.with
 import org.http4k.format.Jackson
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.io.File
 import kotlin.test.expect
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PlaygroundTest {
+
+//    @Test
+//    fun go(){
+//        val environment = KotlinEnvironment.with(File("lib").listFiles().toList())
+//        val file = KotlinFile.from(environment.kotlinEnvironment.project, "fred", "fun main(){ pr0intln(\"hello\") }")
+//        val a = environment.errorsFrom(file)
+//        println(a)
+//    }
+
     @Nested
     inner class KotlinVersions {
         @Test

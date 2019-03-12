@@ -2,6 +2,7 @@ import Build_gradle.Props.http4kVersion
 import Build_gradle.Props.kotlinPluginArtifact
 import Build_gradle.Props.kotlinPluginLocation
 import Build_gradle.Props.kotlinVersion
+import org.jetbrains.kotlin.contracts.model.structure.UNKNOWN_COMPUTATION.type
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
@@ -20,6 +21,13 @@ repositories {
     jcenter()
 }
 
+val kotlinDependency by configurations.creating
+
+val copyDependencies by tasks.creating(Copy::class) {
+    from(kotlinDependency)
+    into("lib")
+}
+
 dependencies {
     File("src/main/resources/configuration.properties").apply{
         parentFile.mkdirs()
@@ -28,6 +36,8 @@ dependencies {
             kotlin.version=$kotlinVersion
         """.trimIndent())
     }
+    kotlinDependency(kotlin("stdlib-jdk8"))
+    kotlinDependency(kotlin("reflect"))
     compile(
         group = "org.jetbrains.kotlin",
         version = kotlinVersion,
@@ -50,6 +60,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+    finalizedBy(copyDependencies)
 }
 tasks.withType<Test> {
     useJUnitPlatform()
@@ -61,9 +72,8 @@ fun dependencyFrom(url: String, artifact: String, version: String) = File("$buil
     files(file.absolutePath)
 }
 
-fun DependencyHandlerScope.compile(group: String, version: String, dependencies: List<String>){
-    dependencies.forEach { dependency -> compile("$group:$dependency:$version") }
-}
+fun DependencyHandlerScope.compile(group: String, version: String, dependencies: List<String>) =
+    dependencies.map { dependency -> compile("$group:$dependency:$version") }
 
 object Props {
     const val kotlinVersion = "1.3.21"

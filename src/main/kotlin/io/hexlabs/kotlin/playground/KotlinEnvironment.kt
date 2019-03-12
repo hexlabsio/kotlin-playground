@@ -2,9 +2,15 @@ package io.hexlabs.kotlin.playground
 
 import com.intellij.openapi.Disposable
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementVisitor
+import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.tree.TokenSet
 import io.hexlabs.kotlin.playground.model.Analysis
 import io.hexlabs.kotlin.playground.model.Completion
+import io.hexlabs.kotlin.playground.model.ErrorDescriptor
+import io.hexlabs.kotlin.playground.model.ExecutionResult
+import io.hexlabs.kotlin.playground.model.Severity
+import io.hexlabs.kotlin.playground.model.TextInterval
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -29,11 +35,14 @@ import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.descriptors.impl.LocalVariableDescriptor
 import org.jetbrains.kotlin.descriptors.impl.TypeParameterDescriptorImpl
+import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.lexer.KtKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtQualifiedExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.renderer.ClassifierNamePolicy
@@ -69,6 +78,9 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
                 }) }.mapNotNull { descriptor -> completionVariantFor(prefix, descriptor) } + keywordsCompletionVariants(KtTokens.KEYWORDS, prefix) + keywordsCompletionVariants(KtTokens.SOFT_KEYWORDS, prefix)
         } ?: emptyList()
     }
+
+    fun errorsFrom(file: KotlinFile): ExecutionResult =
+        errorsFrom(analysisOf(file).analysisResult.bindingContext.diagnostics.all(), analysisErrorsFrom(file.kotlinFile))
 
     private fun completionVariantFor(prefix: String, descriptor: DeclarationDescriptor): Completion? {
         val (name, tail) = descriptor.presentableName()
@@ -128,6 +140,7 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
     private fun keywordsCompletionVariants(keywords: TokenSet, prefix: String) = keywords.types.mapNotNull {
         if (it is KtKeywordToken && it.value.startsWith(prefix)) Completion(it.value, it.value, "", "") else null
     }
+
     private fun Analysis.referenceVariantsFrom(element: PsiElement) = when (element) {
         is KtSimpleNameExpression -> ReferenceVariantsHelper(
             analysisResult.bindingContext,
@@ -137,6 +150,7 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
         ).getReferenceVariants(element, DescriptorKindFilter.ALL, { true }, true, true, true, null).toList()
         else -> null
     }
+
     private fun descriptorsFrom(file: KotlinFile, element: PsiElement): DescriptorInfo =
         with(analysisOf(file)) {
             (referenceVariantsFrom(element) ?: referenceVariantsFrom(element.parent))?.let {
@@ -158,6 +172,46 @@ data class KotlinEnvironment(val kotlinEnvironment: KotlinCoreEnvironment) {
                 )
             }
         }
+
+    private fun analysisErrorsFrom(file: KtFile): List<ErrorDescriptor> {
+
+        class Visitor : PsiElementVisitor() {
+            val errors = mutableListOf<PsiErrorElement>()
+            override fun visitElement(element: PsiElement) {
+                element.acceptChildren(this)
+            }
+
+            override fun visitErrorElement(element: PsiErrorElement) {
+                errors.add(element)
+            }
+        }
+
+        return Visitor().also { it.visitFile(file) }.errors.map {
+            ErrorDescriptor(
+                TextInterval.from(
+                    it.textRange.startOffset,
+                    it.textRange.endOffset,
+                    file.viewProvider.document!!
+                ), it.errorDescription, Severity.ERROR, "red_wavy_line"
+            )
+        }
+    }
+
+    private fun errorsFrom(diagnostics: Collection<Diagnostic>, errors: List<ErrorDescriptor>): ExecutionResult {
+        return ExecutionResult(mapOf("file" to errors + diagnostics.flatMap { diagnostic ->
+            diagnostic.psiFile.virtualFile?.let {
+                val rendered = DefaultErrorMessages.render(diagnostic)
+                if(diagnostic.severity != org.jetbrains.kotlin.diagnostics.Severity.INFO){
+                    diagnostic.textRanges.map { range ->
+                        val className = if (diagnostic.severity == org.jetbrains.kotlin.diagnostics.Severity.ERROR && diagnostic.factory != org.jetbrains.kotlin.diagnostics.Errors.UNRESOLVED_REFERENCE) {
+                            "red_wavy_line"
+                        } else diagnostic.severity.name
+                        ErrorDescriptor(TextInterval.from(range.startOffset, range.endOffset, diagnostic.psiFile.viewProvider.document!!), rendered, Severity.from(diagnostic.severity), className)
+                    }
+                } else emptyList()
+            } ?: emptyList()
+        }))
+    }
 
     private fun analysisOf(file: KotlinFile): Analysis = CliBindingTrace().let { trace ->
         val componentProvider = TopDownAnalyzerFacadeForJVM.createContainer(
