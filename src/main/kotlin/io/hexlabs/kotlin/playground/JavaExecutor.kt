@@ -1,6 +1,5 @@
 package io.hexlabs.kotlin.playground
 
-import io.hexlabs.kotlin.playground.model.ExecutionResult
 import io.hexlabs.kotlin.playground.model.JavaExecutionResult
 import java.io.BufferedReader
 import java.io.IOException
@@ -14,15 +13,15 @@ object JavaExecutor{
     data class ExceptionDescriptor(val message: String, val fullName: String, val stackTrace: List<StackTraceElement> = emptyList(), val cause: ExceptionDescriptor? = null)
 
     data class ProgramOutput(val standardOutput: String, val errorOutput: String, val exception: Exception? = null){
-        fun asExecutionResult(): ExecutionResult {
+        fun asExecutionResult(): JavaExecutionResult {
             return JavaExecutionResult(text = "<outStream>$standardOutput\n</outStream>", exception =exception?.let {
                 ExceptionDescriptor(it.message ?: "no message", it::class.java.toString())
             })
         }
     }
 
-    fun execute(args: Array<String>): ExecutionResult {
-        return Runtime.getRuntime().exec(args).use {
+    fun execute(args: List<String>): JavaExecutionResult {
+        return Runtime.getRuntime().exec(args.toTypedArray()).use {
             outputStream.close()
             val standardOut = InputStreamReader(this.inputStream).buffered()
             val standardError = InputStreamReader(this.errorStream).buffered()

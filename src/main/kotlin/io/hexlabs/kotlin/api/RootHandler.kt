@@ -19,29 +19,21 @@ import java.io.File
 import java.util.Properties
 
 val RootHandler = { options: Options ->
-    val playground = PlaygroundHandler(
-        KotlinEnvironment.with(classpath = listOfNotNull(File("lib"), options.libs)),
-        Configuration(
-            libs = options.libs,
-            disableSecurity = options.disableSecurity,
-            kotlinVersion = options.kotlinVersion
-        )
-    )
     Filters.TRACING
         .then(Filters.CATCH_ALL)
         .let { if (options.cors) it.then(ServerFilters.Cors(CorsPolicy(options.corsAllowedOrigins, options.corsAllowedHeaders, options.corsAllowedMethods.map { m -> Method.valueOf(m) }))) else it }
-        .then(
-            routes(
-                *listOfNotNull(
-                    if (!options.disableHealth)
-                        (options.healthPath bind Method.GET to { Response(Status(options.healthStatus, "Healthy")).body(options.healthBody) })
-                            .also { println("Health endpoint initialised. Will respond with status code ${options.healthStatus} on path ${options.healthPath}") }
-                    else null,
-                    "/kotlinServer" bind playground.playgroundRoutes
-                ).toTypedArray()
-            )
-        )
+        .then(routes(*listOfNotNull(healthEndpoint(options), playgroundEndpoint(options)).toTypedArray()))
 }
+
+fun healthEndpoint(options: Options) = if (!options.disableHealth)
+    (options.healthPath bind Method.GET to { Response(Status(options.healthStatus, "Healthy")).body(options.healthBody) })
+        .also { println("Health endpoint initialised. Will respond with status code ${options.healthStatus} on path ${options.healthPath}") }
+else null
+
+fun playgroundEndpoint(options: Options) = "/kotlinServer" bind PlaygroundHandler(
+    KotlinEnvironment.with(classpath = listOfNotNull(File("lib"), options.libs).flatMap { it.listFiles().toList() }),
+    Configuration(options.kotlinVersion, options.libs, options.disableSecurity)
+).playgroundRoutes
 
 inline fun <reified T : Any> bodyAs(item: T): (Response) -> Response = Body.auto<T>().toLens().of(item)
 
