@@ -28,16 +28,16 @@ jobs:
       name: Docker Build
       command: docker build -t hexlabs/kotlin-playground:latest .
 
-      - run:
-          name: Docker Tag
-          command: docker tag hexlabs/kotlin-playground:latest hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
+    - run:
+        name: Docker Tag
+        command: docker tag hexlabs/kotlin-playground:latest hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
 
-      - run:
-          name: Docker Login
-          command: docker login -u hexlabsbuilder -p $DOCKER_HUB_PASSWORD
+    - run:
+        name: Docker Login
+        command: docker login -u hexlabsbuilder -p $DOCKER_HUB_PASSWORD
 
-      - run:
-          name: Docker Push
-          command: |
-            docker push hexlabs/kotlin-playground:latest
-            docker push hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
+    - run:
+        name: Docker Push
+        command: |
+          docker push hexlabs/kotlin-playground:latest
+          docker push hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
