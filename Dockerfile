@@ -11,7 +11,7 @@ RUN apk add --no-cache bash && \
 
 COPY executor.policy /app/executor.policy
 COPY lib /app/lib
-COPY target/playground* /app/playground.jar
+COPY libs/kotlin-playground* /app/playground.jar
 
 ENV PATH $PATH:/usr/lib/kotlinc/bin
 
