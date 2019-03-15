@@ -3,38 +3,41 @@ jobs:
   build:
     machine:
       enabled: true
-    working_directory: ~/circleci-kotlin-playground
+    working_directory: ~/kotlin-playground
     steps:
     - checkout
+    - restore_cache:
+        keys:
+        - gradle-{{ checksum "build.gradle.kts" }}
     - run:
-        name: Install CFN Scripts
-        command: npm install -g cfn-create-or-update
+        name: Gradle Clean
+        command: ./gradlew clean
+    - run:
+        name: Gradle Build
+        command: ./gradlew build -DBUILD_NUM=$CIRCLE_BUILD_NUM
+    - run:
+        name: Bintray Upload
+        command: ./gradlew bintrayUpload -DBUILD_NUM=$CIRCLE_BUILD_NUM -DBINTRAY_KEY=$BINTRAY_KEY
+
+    - save_cache:
+        paths:
+        - ~/.gradle
+        key: gradle-{{ checksum "build.gradle.kts" }}
 
     - run:
-        name: Install Local File
-        command: mvn install:install-file -Dfile=kotlin-plugin-1.3.0-release-208.jar -DgroupId=org.jetbrains.kotlin -DartifactId=kotlin-plugin -Dversion=1.3.0 -Dpackaging=jar
+      name: Docker Build
+      command: docker build -t hexlabs/kotlin-playground:latest .
 
-    - run:
-        name: Package
-        command: mvn package -DskipTests=true
+      - run:
+          name: Docker Tag
+          command: docker tag hexlabs/kotlin-playground:latest hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
 
-    - store_artifacts:
-        path: template.yml
+      - run:
+          name: Docker Login
+          command: docker login -u hexlabsbuilder -p $DOCKER_HUB_PASSWORD
 
-    - run:
-        name: Docker Build
-        command: docker build -t hexlabs/kotlin-playground:latest .
-
-    - run:
-        name: Docker Tag
-        command: docker tag hexlabs/kotlin-playground:latest hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
-
-    - run:
-        name: Docker Login
-        command: docker login -u hexlabsbuilder -p $DOCKER_HUB_PASSWORD
-
-    - run:
-        name: Docker Push
-        command: |
-          docker push hexlabs/kotlin-playground:latest
-          docker push hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
+      - run:
+          name: Docker Push
+          command: |
+            docker push hexlabs/kotlin-playground:latest
+            docker push hexlabs/kotlin-playground:0.1.$CIRCLE_BUILD_NUM
