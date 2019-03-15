@@ -2,19 +2,38 @@ import Build_gradle.Props.http4kVersion
 import Build_gradle.Props.kotlinPluginArtifact
 import Build_gradle.Props.kotlinPluginLocation
 import Build_gradle.Props.kotlinVersion
+import com.jfrog.bintray.gradle.BintrayExtension
+import groovy.util.Node
+import groovy.util.NodeList
+import groovy.xml.dom.DOMCategory.appendNode
+import org.gradle.internal.impldep.com.amazonaws.util.XpathUtils.asNode
 import org.jetbrains.kotlin.contracts.model.structure.UNKNOWN_COMPUTATION.type
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 import java.net.URL
 
+fun version(): String {
+    val buildNumber = System.getProperty("BUILD_NUM")
+    val version = "0.1" + if (buildNumber.isNullOrEmpty()) "-SNAPSHOT" else ".$buildNumber"
+    println("building version $version")
+    return version
+}
+
+val projectVersion = version()
+
 group = "io.hexlabs"
-version = "0.1-SNAPSHOT"
+val artifactId = "kotlin-playground"
+version = projectVersion
+
 
 plugins {
     kotlin("jvm") version "1.3.21"
     id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
+    id("com.jfrog.bintray") version "1.8.4"
+    `maven-publish`
 }
+
 
 repositories {
     mavenCentral()
@@ -32,7 +51,7 @@ dependencies {
     File("src/main/resources/configuration.properties").apply{
         parentFile.mkdirs()
         writeText("""
-            build.version=$version
+            build.version=$projectVersion
             kotlin.version=$kotlinVersion
         """.trimIndent())
     }
@@ -67,8 +86,10 @@ tasks.withType<Test> {
 }
 
 fun dependencyFrom(url: String, artifact: String, version: String) = File("$buildDir/download/$artifact-$version.jar").let { file ->
-    file.parentFile.mkdirs()
-    file.writeBytes(URL(url).readBytes())
+    //if(!file.exists()) {
+        file.parentFile.mkdirs()
+        file.writeBytes(URL(url).readBytes())
+    //}
     files(file.absolutePath)
 }
 
@@ -80,9 +101,10 @@ object Props {
     const val http4kVersion = "3.115.1"
     const val kotlinPluginArtifact = "kotlin-plugin"
     private const val kotlinRepository = "Kotlin_1320_CompilerAllPlugins"
-    private const val kotlinId = "1937367"
-    private const val kotlinPluginRelease = "release-IJ2018.3-1"
+    private const val kotlinId = "2034508"
+    private const val kotlinPluginRelease = "release-IJ2018.3-2"
     const val kotlinPluginLocation = "$kotlinRepository/$kotlinId:id/$kotlinPluginArtifact-$kotlinVersion-$kotlinPluginRelease.zip!/Kotlin/lib/$kotlinPluginArtifact.jar"
+    // https://teamcity.jetbrains.com/repository/download/Kotlin_1320_CompilerAllPlugins/2034508:id/kotlin-plugin-1.3.21-release-IJ2018.3-2.zip}
 }
 
 configure<KtlintExtension> {
@@ -90,4 +112,42 @@ configure<KtlintExtension> {
     outputToConsole.set(true)
     coloredOutput.set(true)
     reporters.set(setOf(ReporterType.CHECKSTYLE, ReporterType.JSON))
+}
+
+bintray {
+    user = "hexlabs-builder"
+    key = System.getProperty("BINTRAY_KEY") ?: "UNKNOWN"
+    setPublications("mavenJava")
+    publish = true
+    pkg(
+        closureOf<BintrayExtension.PackageConfig> {
+            repo = "hexlabs-maven"
+            name = artifactId
+            userOrg = "hexlabsio"
+            setLicenses("Apache-2.0")
+            vcsUrl = "https://github.com/hexlabsio/kotlin-playground.git"
+            version(closureOf<BintrayExtension.VersionConfig> {
+                name = projectVersion
+                desc = projectVersion
+            })
+        })
+}
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            from(components["java"])
+            artifactId = artifactId
+            pom.withXml {
+                val dependencies = (asNode()["dependencies"] as NodeList)
+                configurations.compile.allDependencies.forEach {
+                    dependencies.add(Node(null, "dependency").apply {
+                        appendNode("groupId", it.group)
+                        appendNode("artifactId", it.name)
+                        appendNode("version", it.version)
+                    })
+                }
+            }
+        }
+    }
 }

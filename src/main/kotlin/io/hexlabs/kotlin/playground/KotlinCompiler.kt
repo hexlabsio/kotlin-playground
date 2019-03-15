@@ -1,6 +1,5 @@
 package io.hexlabs.kotlin.playground
 
-import io.hexlabs.kotlin.playground.model.ErrorDescriptor
 import org.jetbrains.kotlin.codegen.ClassBuilderFactories
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.state.GenerationState
@@ -10,10 +9,9 @@ import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
 
-class KotlinCompiler(val environment: KotlinEnvironment){
+class KotlinCompiler(val environment: KotlinEnvironment) {
 
     open class Compiled(val files: Map<String, ByteArray> = emptyMap(), val mainClass: String? = null)
-    data class CompiledWithErrors(val errors: Map<String, ErrorDescriptor>, val files: Map<String, ByteArray> = emptyMap(), val mainClass: String? = null)
 
     fun compile(files: List<KtFile>): Compiled {
         val generationState = generationStateFor(files)
@@ -38,7 +36,7 @@ class KotlinCompiler(val environment: KotlinEnvironment){
 
     private fun mainClassFrom(bindingContext: BindingContext, files: List<KtFile>): String? {
         val mainFunctionDetector = MainFunctionDetector(bindingContext, LanguageVersionSettingsImpl.DEFAULT)
-        return files.find { mainFunctionDetector.hasMain(it.declarations) }?.let{
+        return files.find { mainFunctionDetector.hasMain(it.declarations) }?.let {
             PackagePartClassUtils.getPackagePartFqName(it.packageFqName, it.name).asString()
         }
     }

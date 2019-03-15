@@ -5,7 +5,7 @@ enum class Severity {
     ERROR,
     WARNING;
     companion object {
-        fun from(severity: org.jetbrains.kotlin.diagnostics.Severity) : Severity {
+        fun from(severity: org.jetbrains.kotlin.diagnostics.Severity): Severity {
             return when (severity) {
                 org.jetbrains.kotlin.diagnostics.Severity.ERROR -> ERROR
                 org.jetbrains.kotlin.diagnostics.Severity.INFO -> INFO

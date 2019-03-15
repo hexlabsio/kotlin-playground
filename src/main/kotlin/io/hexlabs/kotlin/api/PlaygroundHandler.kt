@@ -5,11 +5,9 @@ import io.hexlabs.kotlin.playground.KotlinCompiler
 import io.hexlabs.kotlin.playground.KotlinEnvironment
 import io.hexlabs.kotlin.playground.KotlinFile
 import io.hexlabs.kotlin.playground.model.Configuration
-import io.hexlabs.kotlin.playground.model.ErrorDescriptor
 import io.hexlabs.kotlin.playground.model.JavaExecutionResult
 import io.hexlabs.kotlin.playground.model.Project
 import io.hexlabs.kotlin.playground.model.Severity
-import io.hexlabs.kotlin.playground.model.TextInterval
 import io.hexlabs.kotlin.playground.model.VersionInfo
 import org.http4k.core.Body
 import org.http4k.core.Method
@@ -32,7 +30,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.UUID
-import javax.xml.soap.Text
 
 class PlaygroundHandler(private val environment: KotlinEnvironment, private val configuration: Configuration) {
 
@@ -65,16 +62,19 @@ class PlaygroundHandler(private val environment: KotlinEnvironment, private val 
         }
         return when (Operations.from(typeFrom(request), requiresBody = true)) {
             Operations.COMPLETE -> Response(OK).with(bodyAs(environment.complete(files.first(), lineFrom(request), characterFrom(request))))
-            Operations.HIGHLIGHT ->  Response(OK).with(bodyAs(environment.errorsFrom(files.map { it.kotlinFile })))
+            Operations.HIGHLIGHT -> Response(OK).with(bodyAs(environment.errorsFrom(files.map { it.kotlinFile })))
             Operations.RUN -> {
                 val errors = environment.errorsFrom(files.map { it.kotlinFile })
                 return Response(OK).with(
-                    bodyAs( if(errors.any { it.value.any { error -> error.severity == Severity.ERROR} })
+                    bodyAs(if (errors.any { it.value.any { error -> error.severity == Severity.ERROR } })
                         JavaExecutionResult("", errors = errors)
                     else {
                         val compilation = KotlinCompiler(environment).compile(files.map { it.kotlinFile })
                         if (compilation.files.isNotEmpty()) {
-                            JavaExecutor.execute(argsFrom(compilation.mainClass!!, write(compilation)))
+                            val output = write(compilation)
+                            JavaExecutor.execute(argsFrom(compilation.mainClass!!, output)).also {
+                                output.path.toAbsolutePath().toFile().deleteRecursively()
+                            }
                         } else JavaExecutionResult("", JavaExecutor.ExceptionDescriptor("Something went wrong", "Exception"))
                     })
                 )
@@ -86,7 +86,7 @@ class PlaygroundHandler(private val environment: KotlinEnvironment, private val 
     private fun write(compiled: KotlinCompiler.Compiled): PlaygroundHandler.OutputDir {
         val sessionId = UUID.randomUUID().toString().replace("-", "")
         val outputDir = Paths.get(configuration.workingDirectory, "generated", sessionId)
-        if(!configuration.disableSecurity) {
+        if (!configuration.disableSecurity) {
             val policy = File("executor.policy").readText()
                 .replace("%%GENERATED%%", outputDir.toString())
                 .replace("%%LIB_DIR%%", configuration.workingDirectory)
@@ -102,8 +102,8 @@ class PlaygroundHandler(private val environment: KotlinEnvironment, private val 
 
     private fun argsFrom(mainClass: String, outputDirectory: PlaygroundHandler.OutputDir) = listOfNotNull(
         "java",
-        if(!configuration.disableSecurity) "-Djava.security.manager" else null,
-        if(!configuration.disableSecurity) "-Djava.security.policy=${outputDirectory.path.resolve("executor.policy").toAbsolutePath()}" else null,
+        if (!configuration.disableSecurity) "-Djava.security.manager" else null,
+        if (!configuration.disableSecurity) "-Djava.security.policy=${outputDirectory.path.resolve("executor.policy").toAbsolutePath()}" else null,
         "-classpath"
     ) + (environment.classpath.map { it.absolutePath } + outputDirectory.path.toAbsolutePath().toString()).joinToString(":") +
             mainClass

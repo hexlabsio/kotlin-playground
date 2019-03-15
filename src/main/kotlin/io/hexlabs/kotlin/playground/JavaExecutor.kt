@@ -5,16 +5,17 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.lang.StringBuilder
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 
-object JavaExecutor{
+object JavaExecutor {
 
     data class StackTraceElement(val className: String, val methodName: String, val fileName: String, val lineNumber: Int)
     data class ExceptionDescriptor(val message: String, val fullName: String, val stackTrace: List<StackTraceElement> = emptyList(), val cause: ExceptionDescriptor? = null)
 
-    data class ProgramOutput(val standardOutput: String, val errorOutput: String, val exception: Exception? = null){
+    data class ProgramOutput(val standardOutput: String, val errorOutput: String, val exception: Exception? = null) {
         fun asExecutionResult(): JavaExecutionResult {
-            return JavaExecutionResult(text = "<outStream>$standardOutput\n</outStream>", exception =exception?.let {
+            return JavaExecutionResult(text = "<outStream>$standardOutput\n</outStream>", exception = exception?.let {
                 ExceptionDescriptor(it.message ?: "no message", it::class.java.toString())
             })
         }
@@ -44,7 +45,7 @@ object JavaExecutor{
                     e.printStackTrace()
                 }
             }
-            val exception = if(errorText.toString().isNotEmpty()) {
+            val exception = if (errorText.toString().isNotEmpty()) {
                 println(errorText.toString())
                 Exception(errorText.toString())
             } else null
@@ -52,9 +53,9 @@ object JavaExecutor{
         }
     }
 
-    private fun <T> Process.use(body: Process.() -> T) = try{ body() } finally { destroy() }
+    private fun <T> Process.use(body: Process.() -> T) = try { body() } finally { destroy() }
 
-    private fun interruptAfter(delay: Long, process: Process, threads: List<Thread>){
+    private fun interruptAfter(delay: Long, process: Process, threads: List<Thread>) {
         Timer(true).schedule(object : TimerTask() {
             override fun run() {
                 threads.forEach { it.interrupt() }

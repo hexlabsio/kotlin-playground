@@ -20,7 +20,7 @@ data class TextInterval(val start: TextPosition, val end: TextPosition) {
             return TextInterval(
                 TextPosition(lineNumberForElementStart, charNumberForElementStart),
                 TextPosition(lineNumberForElementEnd, charNumberForElementEnd)
-            );
+            )
         }
     }
 }

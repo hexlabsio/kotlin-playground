@@ -200,10 +200,10 @@ data class KotlinEnvironment(val classpath: List<File>, val kotlinEnvironment: K
     private fun errorsFrom(diagnostics: Collection<Diagnostic>) = diagnostics.mapNotNull { diagnostic ->
         diagnostic.psiFile.virtualFile?.let {
             val render = DefaultErrorMessages.render(diagnostic)
-            if(!render.contains("This cast can never succeed")){
-                if(diagnostic.severity != org.jetbrains.kotlin.diagnostics.Severity.INFO){
+            if (!render.contains("This cast can never succeed")) {
+                if (diagnostic.severity != org.jetbrains.kotlin.diagnostics.Severity.INFO) {
                     val textRanges = diagnostic.textRanges.iterator()
-                    if(textRanges.hasNext()){
+                    if (textRanges.hasNext()) {
                         var className = diagnostic.severity.name
                         if (!(diagnostic.factory === Errors.UNRESOLVED_REFERENCE) && diagnostic.severity == org.jetbrains.kotlin.diagnostics.Severity.ERROR) {
                             className = "red_wavy_line"
@@ -220,14 +220,14 @@ data class KotlinEnvironment(val classpath: List<File>, val kotlinEnvironment: K
     private infix fun Map<String, List<ErrorDescriptor>>.and(errors: Map<String, List<ErrorDescriptor>>) =
         (this.toList() + errors.toList())
             .groupBy { it.first }
-            .map { it.key to it.value.fold(emptyList<ErrorDescriptor>()) { acc, (_, errors) -> acc + errors} }
+            .map { it.key to it.value.fold(emptyList<ErrorDescriptor>()) { acc, (_, errors) -> acc + errors } }
             .toMap()
 
     private fun errorsFrom(diagnostics: Collection<Diagnostic>, errors: Map<String, List<ErrorDescriptor>>): Map<String, List<ErrorDescriptor>> {
         return (errors and errorsFrom(diagnostics)).map { (fileName, errors) ->
-            fileName to errors.sortedWith( Comparator { o1, o2 ->
+            fileName to errors.sortedWith(Comparator { o1, o2 ->
                 val line = o1.interval.start.line.compareTo(o2.interval.start.line)
-                when(line){
+                when (line) {
                     0 -> o1.interval.start.ch.compareTo(o2.interval.start.ch)
                     else -> line
                 }
