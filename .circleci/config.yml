@@ -16,8 +16,8 @@ jobs:
         name: Gradle Build
         command: ./gradlew build -DBUILD_NUM=$CIRCLE_BUILD_NUM
     - run:
-        name: Bintray Upload
-        command: ./gradlew bintrayUpload -DBUILD_NUM=$CIRCLE_BUILD_NUM -DBINTRAY_KEY=$BINTRAY_KEY
+        name: Bintray Upload if in Master
+        command: '[ "${CIRCLE_BRANCH}" == "master" ] && ./gradlew bintrayUpload -DBUILD_NUM=$CIRCLE_BUILD_NUM -DBINTRAY_KEY=$BINTRAY_KEY'
 
     - save_cache:
         paths:
