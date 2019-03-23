@@ -2,6 +2,7 @@ import Build_gradle.Props.http4kVersion
 import Build_gradle.Props.kotlinPluginArtifact
 import Build_gradle.Props.kotlinPluginLocation
 import Build_gradle.Props.kotlinVersion
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.jfrog.bintray.gradle.BintrayExtension
 import groovy.util.Node
 import groovy.util.NodeList
@@ -31,6 +32,7 @@ plugins {
     kotlin("jvm") version "1.3.21"
     id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
     id("com.jfrog.bintray") version "1.8.4"
+    id("com.github.johnrengelman.shadow") version "4.0.4"
     `maven-publish`
 }
 
@@ -84,6 +86,25 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+val shadowJar by tasks.getting(ShadowJar::class) {
+    classifier = "uber"
+    manifest {
+        attributes(mapOf("Main-Class" to "io.hexlabs.kotlin.api.RootHandlerKt"))
+    }
+//    dependencies {
+//        exclude(dependency("org.jetbrains.kotlin::$kotlinVersion"))
+//    }
+}
+
+val jar by tasks.getting(Jar::class) {
+    manifest {
+        attributes["Main-Class"] = "io.hexlabs.kotlin.api.RootHandlerKt"
+    }
+}
+
+artifacts {
+    add("archives", shadowJar)
+}
 
 fun dependencyFrom(url: String, artifact: String, version: String) = File("$buildDir/download/$artifact-$version.jar").let { file ->
     //if(!file.exists()) {
@@ -113,6 +134,8 @@ configure<KtlintExtension> {
     coloredOutput.set(true)
     reporters.set(setOf(ReporterType.CHECKSTYLE, ReporterType.JSON))
 }
+
+
 
 bintray {
     user = "hexlabs-builder"
