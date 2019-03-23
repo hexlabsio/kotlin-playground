@@ -10,7 +10,7 @@ class Options(
         description = "Extra Library Directory",
         converter = FileConverter::class
     )
-    var libs: File? = null,
+    var libs: File? = File("lib"),
     @Parameter(
         names = ["-disable-security"],
         description = "Disables Security Policy"
